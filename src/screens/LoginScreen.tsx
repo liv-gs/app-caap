@@ -1,20 +1,20 @@
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-} from "react-native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
-import { AuthStackParamList } from "../navigation/index";
+} from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { AuthStackParamList } from '../navigation/index';
 
 // Importando SVGs como componentes
-import FundoSvg from "../../assets/images/FUNDO.svg";
-import GroupSvg from "../../assets/images/Group.svg";
+import FundoSvg from '../../assets/images/FUNDO.svg';
+import GroupSvg from '../../assets/images/Group.svg';
 
-type LoginScreenProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
+type LoginScreenProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 function FormContainer({ children }: { children: ReactNode }) {
   return <View style={styles.formContainer}>{children}</View>;
@@ -22,52 +22,26 @@ function FormContainer({ children }: { children: ReactNode }) {
 
 export default function LoginScreen() {
   const navigation = useNavigation<LoginScreenProp>();
-  const [cpf, setCpf] = useState("");
-  const [senha, setSenha] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [error, setError] = useState('');
 
-  const handleLogin = async () => {
-  setError("");
+  const handleLogin = () => {
+    setError('');
+    console.log('E-mail:', email);
+    console.log('Senha:', senha);
+    navigation.replace('Home');
+  };
+  const [cpf, setCpf] = useState('');
 
-  if (!cpf || !senha) {
-    setError("Preencha todos os campos.");
-    return;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append("cpf", cpf);
-    formData.append("senha", senha);
-
-    const response = await fetch(
-      "https://caapi.org.br/appcaapi/api/logarAdvogado",
-      { method: "POST", body: formData }
-    );
-
-    const data = await response.json();
-    console.log("Resposta da API:", data);
-
-    if (data?.ok === "Usuario logado!") {
-      // Redireciona para Home
-      navigation.replace("Home");
-    } else {
-      setError("CPF ou OAB inválidos.");
-    }
-  } catch (err) {
-    console.error(err);
-    setError("Erro ao conectar com o servidor.");
-  }
-};
+  const handleCadastro = () => {
+    navigation.navigate('Step1');
+  };
 
   return (
     <View style={styles.background}>
       {/* Fundo como SVG */}
-      <FundoSvg
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-        style={styles.svgBackground}
-      />
+      <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style={styles.svgBackground} />
 
       <View style={styles.container}>
         <FormContainer>
@@ -75,20 +49,20 @@ export default function LoginScreen() {
 
           {error ? <Text style={styles.errorBanner}>{error}</Text> : null}
 
-          {/* CPF */}
+          {/* E-mail */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>CPF</Text>
             <TextInput
               style={styles.input}
-              value={cpf}
-              onChangeText={setCpf}
+              value={cpf}          
+              onChangeText={setCpf} 
               keyboardType="numeric"
-              maxLength={14}
+              maxLength={14}      
               placeholder="000.000.000-00"
             />
           </View>
 
-          {/* Senha (Número OAB) */}
+          {/* Senha */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Número OAB</Text>
             <TextInput
@@ -104,16 +78,14 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Entrar</Text>
           </TouchableOpacity>
 
-          
+          <TouchableOpacity onPress={handleCadastro}>
+            <Text style={styles.link}>Ainda não tem uma conta?</Text>
+          </TouchableOpacity>
         </FormContainer>
 
         {/* Rodapé */}
         <View style={styles.footer}>
-          <GroupSvg
-            width="100%"
-            height={100}
-            preserveAspectRatio="xMidYMid slice"
-          />
+          <GroupSvg width="100%" height={100} preserveAspectRatio="xMidYMid slice" />
         </View>
       </View>
     </View>
@@ -123,27 +95,27 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: "100%",
-    height: "100%",
+    width: '100%',
+    height: '100%',
   },
   svgBackground: {
-    position: "absolute",
+    position: 'absolute',
     top: 0,
     left: 0,
   },
   container: {
     flex: 1,
     padding: 24,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   formContainer: {
-    width: "100%",
+    width: '100%',
     maxWidth: 400,
     padding: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -151,56 +123,65 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 40,
-    textAlign: "center",
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   errorBanner: {
-    backgroundColor: "#f8d7da",
-    color: "#721c24",
+    backgroundColor: '#f8d7da',
+    color: '#721c24',
     padding: 12,
     marginBottom: 16,
     borderRadius: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
   inputGroup: {
-    width: "100%",
-    marginBottom: 30,
+    width: '100%',
+    marginBottom: 30, // espaço maior entre cada campo
   },
+
   label: {
     fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 6,
-    color: "#333",
+    fontWeight: 'bold',
+    marginBottom: 6, // espaço entre label e input
+    color: '#333',
   },
+
   input: {
     height: 48,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
+  
   button: {
     height: 48,
-    backgroundColor: "#CF1920",
+    backgroundColor: '#CF1920',
     borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 12,
   },
   buttonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   link: {
-    color: "#1E40AF",
-    textAlign: "center",
+    color: '#1E40AF',
+    textAlign: 'center',
   },
   footer: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
-    width: "100%",
+    width: '100%',
   },
-});
+}); 

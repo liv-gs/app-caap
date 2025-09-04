@@ -18,7 +18,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 
-// --- TIPO DE ÍCONES ---
+
 type IconConfig = {
   lib: "Feather" | "FontAwesome" | "MaterialIcons" | "Ionicons" | "AntDesign";
   name: string;
@@ -144,14 +144,14 @@ export default function CategoriasScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    paddingTop: 120 ,
     paddingHorizontal: 20,
     backgroundColor: "#e1e1e167",
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "600",
-    color: "#5a5f6aff",
+    color: "#10567C",
     marginBottom: 20,
   },
   card: {
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#173C6B",
-    padding: 16,
+    padding: 25,
     borderRadius: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },

@@ -21,7 +21,7 @@ const Stack = createNativeStackNavigator();
 function HeaderBackground() {
   return (
     <View style={{ position: 'absolute', top: 0, left:0, right:0, bottom:0 }}>
-      <HeaderBg width="100%" height="95%" preserveAspectRatio="xMidYMid slice" />
+      <HeaderBg width="100%" height="110%" preserveAspectRatio="xMidYMid slice" />
       <View style={{ position: 'absolute', right: 12, top: 10 }}>
         <LogoSvg width={100} height={100} />
       </View>
@@ -58,7 +58,7 @@ export default function DrawerNavigator() {
         drawerStyle: { backgroundColor: '#f0e8e8ff' },
         drawerActiveTintColor: '#bc7769ff',
         drawerInactiveTintColor: '#12adaf',
-        headerTintColor: '#12adaf',
+        headerTintColor: '#ffffffff',
       }}
     >
       <Drawer.Screen
