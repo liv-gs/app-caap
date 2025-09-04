@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "types": [
+      "react",
+      "react-native"
+    ],
+    "skipLibCheck": true
+  },
+  "include": [
+    "src",
+    "declarations.d.ts"
+  ],
+  "extends": "expo/tsconfig.base"
+}

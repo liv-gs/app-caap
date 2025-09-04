@@ -1,0 +1,6 @@
+npx expo start -c   
+npx expo start 
+
+expo install expo-image-picker
+
+

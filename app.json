@@ -1,0 +1,32 @@
+{
+  "expo": {
+      "name": "MeuAppTS",
+      "slug": "MeuAppTS",
+      "version": "1.0.0",
+      "orientation": "portrait",
+      "icon": "./assets/color.png",
+      "userInterfaceStyle": "light",
+      "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/.foto.png",
+      "resizeMode": "cover", 
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/color.png"
+    
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/color.png"
+    },
+    "plugins": [
+      "expo-font"
+    ]
+  }
+}
