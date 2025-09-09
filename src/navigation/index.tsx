@@ -1,17 +1,29 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import LoginScreen from '../screens/LoginScreen';
-import Step1 from '../screens/cadastro/Step1';
-import Step2 from '../screens/cadastro/Step2';
-import Step3 from '../screens/cadastro/Step3';
-import DrawerNavigator from '../navigation/DrawerNavigation';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+// Telas
+import LoginScreen from "../screens/LoginScreen";
+import EscolhaTipoScreen from "../screens/cadastro/Escolha";
+import FormDados from "../screens/cadastro/DadosPessoais";
+import FotoCarteira from "../screens/cadastro/FotoCarteira";
+import FormEnd from "../screens/cadastro/FormEnd";
+import Validação from "../screens/cadastro/Validacao";
+import DrawerNavigator from "./DrawerNavigation";
 
 export type AuthStackParamList = {
   Login: undefined;
-  Step1: undefined;
-  Step2: undefined;
-  Step3: undefined;
+  EscolhaTipo: undefined;
+
+  // comum (com param pra saber o tipo)
+  CadastroDados: { tipo: "advogado" | "colaborador" };
+
+  // advogado
+  CadastroCarteira: { dados: any };
+  CadastroEndereco: { dados: any; carteira: any };
+
+  // validação (comum aos dois)
+  CadastroValidacao: undefined;
+
   Home: undefined;
 };
 
@@ -19,12 +31,22 @@ const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export default function AuthStack() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }}/>
-      <Stack.Screen name="Step1" component={Step1} options={{ headerShown: false }}/>
-      <Stack.Screen name="Step2" component={Step2} options={{ headerShown: false }}/>
-      <Stack.Screen name="Step3" component={Step3} options={{ headerShown: false }}/>
-      <Stack.Screen name="Home" component={DrawerNavigator} options={{ headerShown: false }}/>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="EscolhaTipo" component={EscolhaTipoScreen} />
+
+      {/* comum */}
+      <Stack.Screen name="CadastroDados" component={FormDados} />
+
+      {/* advogado */}
+      <Stack.Screen name="CadastroCarteira" component={FotoCarteira} />
+      <Stack.Screen name="CadastroEndereco" component={FormEnd} />
+
+      {/* tela final */}
+      <Stack.Screen name="CadastroValidacao" component={Validação} />
+
+      {/* pós login */}
+      <Stack.Screen name="Home" component={DrawerNavigator} />
     </Stack.Navigator>
   );
 }

@@ -1,3 +1,4 @@
+// Service.tsx
 import React from "react";
 import {
   View,
@@ -8,24 +9,21 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MainStackParamList } from "../navigation/DrawerNavigation";
-import { Feather } from "@expo/vector-icons"; // Ícones
+import { Feather } from "@expo/vector-icons";
+import type { MainStackParamList } from "../types/types";
 
-// Tipagem para navigation do Card
-type CardNavigationProp = NativeStackNavigationProp<
-  MainStackParamList,
-  "Service"
->;
 
-// Props do Card
-type CardProps = {
+export type CardProps = {
   title: string;
   description: string;
-  icon: keyof typeof Feather.glyphMap; // nome do ícone Feather
+  icon: keyof typeof Feather.glyphMap; 
 };
 
-// Dados dos serviços
-const services = [
+
+type CardNavigationProp = NativeStackNavigationProp<MainStackParamList, "Service">;
+
+
+const services: CardProps[] = [
   {
     title: "Auxílio",
     description:
@@ -88,27 +86,25 @@ const services = [
   },
 ];
 
-// Card Component
+// Componente do Card
 const Card = ({ title, description, icon }: CardProps) => {
   const navigation = useNavigation<CardNavigationProp>();
 
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate("DadosService")}
+      activeOpacity={0.8}
+      onPress={() =>
+        navigation.navigate("DadosService", { service: { title, description } })
+      }
     >
       <View style={styles.row}>
-        {/* Ícone + Título */}
         <View style={styles.leftSection}>
           <Feather name={icon} size={22} color="#fff" style={{ marginRight: 10 }} />
           <Text style={styles.title}>{title}</Text>
         </View>
-
-        {/* Seta para a direita */}
         <Feather name="chevron-right" size={20} color="#fff" />
       </View>
-
-      {/* Descrição */}
       <Text style={styles.description}>{description}</Text>
     </TouchableOpacity>
   );
@@ -157,7 +153,7 @@ const styles = StyleSheet.create({
   cardsWrapper: {
     alignItems: "center",
   },
-   card: {
+  card: {
     width: "90%",
     backgroundColor: "#0D3B66",
     borderRadius: 16,

@@ -13,33 +13,35 @@ import {
   MaterialIcons,
   Ionicons,
   AntDesign,
+  FontAwesome5,
+  MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../types";
+import { RootStackParamList } from "../types/types";
 
 
 type IconConfig = {
-  lib: "Feather" | "FontAwesome" | "MaterialIcons" | "Ionicons" | "AntDesign";
+  lib: "Feather" | "FontAwesome" | "MaterialIcons" | "Ionicons" | "AntDesign"|"FontAwesome5"|"MaterialCommunityIcons";
   name: string;
 };
 
 // --- MAPA DE ÍCONES POR CATEGORIA ---
 const iconMap: Record<string, IconConfig> = {
-  alimentacao: { lib: "Feather", name: "coffee" },
-  "construcao-e-decoracao": { lib: "MaterialIcons", name: "construction" },
-  educacao: { lib: "MaterialIcons", name: "school" },
+  alimentacao: { lib: "FontAwesome", name: "cutlery" },
+  "construcao-e-decoracao": { lib: "FontAwesome5", name: "warehouse" },
+  educacao: { lib: "FontAwesome", name: "book" },
   "energia-solar": { lib: "Feather", name: "sun" },
-  entretenimento: { lib: "Ionicons", name: "film-outline" },
-  escritorios: { lib: "Feather", name: "briefcase" },
-  esporte: { lib: "Feather", name: "activity" },
+  entretenimento: { lib: "FontAwesome5", name: "film" },
+  escritorios: { lib: "FontAwesome5", name: "building" },
+  esporte: { lib: "MaterialCommunityIcons", name: "bike" },
   estetica: { lib: "Feather", name: "scissors" },
   eventos: { lib: "AntDesign", name: "calendar" },
-  floriculturas: { lib: "Ionicons", name: "flower-outline" },
+  floriculturas: { lib: "MaterialCommunityIcons", name: "flower" },
   hotel: { lib: "FontAwesome", name: "hotel" },
-  odontologico: { lib: "FontAwesome", name: "stethoscope" },
-  opticas: { lib: "Feather", name: "eye" },
-  saude: { lib: "Feather", name: "heart" },
+  odontologico: { lib: "MaterialCommunityIcons", name: "tooth" },
+  opticas: { lib: "Ionicons", name: "glasses-outline" },
+  saude: { lib: "FontAwesome", name: "heartbeat" },
   "seguro-e-previdencia": { lib: "Feather", name: "shield" },
   "servicos-automotivos": { lib: "Feather", name: "truck" },
   "servicos-de-seguranca": { lib: "Feather", name: "lock" },
@@ -48,7 +50,7 @@ const iconMap: Record<string, IconConfig> = {
   tecnologia: { lib: "Feather", name: "cpu" },
   turismo: { lib: "Feather", name: "navigation" },
   "vestuario-e-acessorios": { lib: "Feather", name: "shopping-bag" },
-  veterinaria: { lib: "Ionicons", name: "paw-outline" },
+  veterinaria: { lib: "MaterialIcons", name: "pets" },
   default: { lib: "Feather", name: "tag" },
 };
 
@@ -100,6 +102,10 @@ export default function CategoriasScreen() {
         return <Ionicons name={icon.name as any} size={20} color="#1D81B8" />;
       case "AntDesign":
         return <AntDesign name={icon.name as any} size={20} color="#1D81B8" />;
+      case "FontAwesome5":
+        return <FontAwesome5 name={icon.name as any} size={20} color="#1D81B8" />;
+      case "MaterialCommunityIcons":
+        return <MaterialCommunityIcons  name={icon.name as any} size={20} color="#1D81B8" />;
       default:
         return <Feather name="tag" size={20} color="#1D81B8" />;
     }
@@ -130,7 +136,7 @@ export default function CategoriasScreen() {
       {loading ? (
         <ActivityIndicator size="large" color="#173C6B" />
       ) : (
-        <FlatList
+        <FlatList  
           data={categorias}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
@@ -160,12 +166,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#173C6B",
     padding: 25,
-    borderRadius: 8,
+    borderRadius: 22,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
-    elevation: 4,  //sombra
+    elevation: 1,  //sombra
     marginBottom: 12,
   },
   leftContent: {

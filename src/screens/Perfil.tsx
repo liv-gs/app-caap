@@ -1,156 +1,176 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ImageBackground, TouchableOpacity, Image } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import React from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import AppText from '../components/AppText';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAuth } from '../context/AuthContext';
+import { Usuario } from '../types/Usuario'; // 👈 importando o tipo
 
-export default function Perfil() {
-  const backgroundImage = require('../../assets/images/foto1.png');
-  const backgroundImage2 = require('../../assets/images/foto2.png');
-  
-  const [foto, setFoto] = useState<string | null>(null);
+type RootStackParamList = {
+  EditarDados: undefined;
+  Dados: undefined;
+};
 
-  const tirarFoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-    });
+export default function Dados() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { usuario } = useAuth(); // 👈 pega os dados do contexto
 
-    if (!result.canceled) {
-      setFoto(result.assets[0].uri);
-    }
-  };
+  if (!usuario) {
+    return (
+      <View style={styles.loading}>
+        <AppText>Carregando dados...</AppText>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-        <AppText style={styles.header}>Carteira Virtual</AppText>
-      <ImageBackground
-        source={backgroundImage}
-        style={styles.carteirinha}
-        imageStyle={styles.fundoImagem}
-      >
-        {/* Logo pequena */}
-        <ImageBackground
-          source={backgroundImage2}
-          style={styles.logoPequena}
-          imageStyle={styles.logoImageStyle}
-        />
+    <ScrollView contentContainerStyle={styles.container}>
+      <AppText style={styles.header}>Dados Pessoais</AppText>
 
-        <View style={styles.topo}>
-          <TouchableOpacity style={styles.foto} onPress={tirarFoto}>
-            {foto ? (
-              <Image source={{ uri: foto }} style={styles.imagemFoto} />
-            ) : (
-              <Feather name="camera" size={24} color="#888" />
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.info}>
-            <AppText style={styles.nome}>
-              Levi Ronniele Gonçalves dos santos
-            </AppText>
+      {/* Foto e Nome */}
+      <View style={styles.carteira}>
+        <View style={styles.headerRow}>
+          {usuario.foto && (
+            <Image source={{ uri: usuario.foto }} style={styles.avatar} />
+          )}
+          <View style={styles.nameBlock}>
+            <AppText style={styles.nome}>{usuario.nomeLogado}</AppText>
+            <AppText style={styles.matricula}>OAB: {usuario.oab}</AppText>
           </View>
         </View>
 
-        {/* QR code ilustrativo */}
-    
-
-        <View style={styles.dadosBaixo}>
-          <AppText style={styles.dadoTexto}>Validade: 12/2025</AppText>
-          <AppText style={styles.dadoTexto}>Matrícula: 123456</AppText>
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>CPF</AppText>
+          <AppText style={styles.value}>{usuario.cpf}</AppText>
         </View>
-      </ImageBackground>
-    </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>E-mail</AppText>
+          <AppText style={styles.value}>{usuario.email}</AppText>
+        </View>
+      </View>
+
+      {/* Bloco maior */}
+      <View style={styles.spacer} />
+      <View style={styles.infoContainer}>
+        <TouchableOpacity onPress={() => navigation.navigate('EditarDados')}>
+          <Feather name="edit" size={24} color="#173C6B" style={styles.iconEditar}/>
+        </TouchableOpacity>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Celular</AppText>
+          <AppText style={styles.value}>{usuario.celular}</AppText>
+        </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Endereço</AppText>
+          <AppText style={styles.value}>
+            {usuario.endereco?.enderecoCompleto ||
+              `${usuario.endereco?.logradouro}, ${usuario.endereco?.numero}, ${usuario.endereco?.bairro}`}
+          </AppText>
+        </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Cidade</AppText>
+          <AppText style={styles.value}>{usuario.endereco?.municipio} - {usuario.endereco?.uf}</AppText>
+        </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Validade da Carteira</AppText>
+          <AppText style={styles.value}>{usuario.validadeCarteira}</AppText>
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop: 110,
+    flexGrow: 1,
+    padding: 24,
     backgroundColor: '#e1e1e167',
-    flex: 1,
-    paddingTop: 100,
     alignItems: 'center',
   },
   header: {
-    textAlign: 'center',
-    fontWeight: '500',
     fontSize: 22,
-    marginBottom: 40,
-    paddingTop: 20,
+    fontWeight: '500',
+    marginBottom: 15,
+    textAlign: 'center',
     color: '#5a5f6aff',
   },
-  carteirinha: {
-    width: 360,
-    height: 210,
+  carteira: {
     backgroundColor: '#fff',
-    borderColor: '#ccc',
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 16,
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 15,
-    position: 'relative',
+    borderColor: '#ffffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
     elevation: 5,
   },
-  fundoImagem: {
-    resizeMode: 'cover',
-    borderRadius: 10,
-  },
-  topo: {
+  headerRow: {
     flexDirection: 'row',
-    margin: 2,
-  },
-  foto: {
-    width: 80,
-    height: 100,
-    backgroundColor: '#ddd',
-    borderRadius: 6,
-    justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
+    marginBottom: 12,
   },
-  imagemFoto: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 6,
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 12,
   },
-  info: {
-    marginLeft: 8,
-    paddingTop: 50,
-    maxWidth: 250,
+  nameBlock: {
+    flexDirection: 'column',
   },
   nome: {
     fontSize: 18,
-    color: '#dededeff',
-    flexWrap: 'wrap',
+    color: '#111827',
   },
-  logoPequena: {
-    width: 50,
-    height: 50,
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-  logoImageStyle: {
-    borderRadius: 8,
-  },
-  dadosBaixo: {
-    position: 'absolute',
-    bottom: 10,
-    right: 15,
-    alignItems: 'flex-end',
-  },
-  dadoTexto: {
+  matricula: {
     fontSize: 14,
-    color: '#dededeff',
+    color: '#6B7280',
   },
-  qrCode: {
-    position: 'absolute',
-    bottom: 10,
-    left: 15,
-    width: 50,
-    height: 50,
+  infoBlock: {
+    marginBottom: 12,
   },
+  label: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  value: {
+    fontSize: 14,
+    color: '#111827',
+  },
+  spacer: {
+    height: 24,
+  },
+  infoContainer: {
+    backgroundColor: '#fff',
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  iconEditar: {
+    alignSelf: 'flex-end',
+    marginBottom: 12,
+  },
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  }
 });

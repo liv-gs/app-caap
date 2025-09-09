@@ -10,9 +10,12 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker"; // instalar: expo install @react-native-picker/picker
 import AppText from "../components/AppText";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../types";
+import { RootStackParamList } from "../types/types";
+import { Dropdown } from 'react-native-element-dropdown';
+
 
 type DadosConvenioRouteProp = RouteProp<RootStackParamList, "DadosConvenio">;
 
@@ -25,6 +28,13 @@ type Convenio = {
   categoria: string[];
 };
 
+type Cidade = {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+};
+
 export default function DadosConvenio() {
   const navigation = useNavigation();
   const route = useRoute<DadosConvenioRouteProp>();
@@ -35,12 +45,33 @@ export default function DadosConvenio() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [cidadeSelecionada, setCidadeSelecionada] = useState<string>("");
+
+  // 🔹 Buscar cidades
+  useEffect(() => {
+    const fetchCidades = async () => {
+      try {
+        const res = await fetch(
+          "https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/cidades"
+        );
+        const json = await res.json();
+        setCidades(json);
+      } catch (err) {
+        console.error("Erro ao buscar cidades:", err);
+      }
+    };
+
+    fetchCidades();
+  }, []);
+
+  // 🔹 Buscar convênios
   const fetchConvenios = useCallback(async () => {
     if (loading || !hasMore) return;
 
     setLoading(true);
     try {
-      const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=&categoria=${categoria ?? ""}&page=${page}&per_page=10`;
+      const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${categoria ?? ""}&page=${page}&per_page=10`;
 
       const res = await fetch(url);
       const json = await res.json();
@@ -56,8 +87,9 @@ export default function DadosConvenio() {
     } finally {
       setLoading(false);
     }
-  }, [page, loading, hasMore, categoria]);
+  }, [page, loading, hasMore, categoria, cidadeSelecionada]);
 
+  // 🔹 Quando trocar categoria OU cidade, resetar busca
   useEffect(() => {
     const load = async () => {
       setData([]);
@@ -65,7 +97,7 @@ export default function DadosConvenio() {
       setHasMore(true);
       setLoading(true);
       try {
-        const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=&categoria=${categoria ?? ""}&page=1&per_page=10`;
+        const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${categoria ?? ""}&page=1&per_page=10`;
         const res = await fetch(url);
         const json = await res.json();
         setData(json);
@@ -79,7 +111,7 @@ export default function DadosConvenio() {
     };
 
     load();
-  }, [categoria]);
+  }, [categoria, cidadeSelecionada]);
 
   const abrirLink = (url: string) => {
     if (url) Linking.openURL(url);
@@ -101,7 +133,11 @@ export default function DadosConvenio() {
         <View
           style={[
             styles.imagem,
-            { justifyContent: "center", alignItems: "center", backgroundColor: "#ccc" },
+            {
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#ccc",
+            },
           ]}
         >
           <Text>Sem imagem</Text>
@@ -118,7 +154,9 @@ export default function DadosConvenio() {
         {item.cidade?.length > 0 && (
           <View style={styles.badgeContainer}>
             {item.cidade.map((cidade) => (
-              <AppText key={cidade} style={styles.badge}>📍 {cidade}</AppText>
+              <AppText key={cidade} style={styles.badge}>
+                📍 {cidade}
+              </AppText>
             ))}
           </View>
         )}
@@ -126,7 +164,9 @@ export default function DadosConvenio() {
         {item.categoria?.length > 0 && (
           <View style={styles.badgeContainer}>
             {item.categoria.map((cat) => (
-              <AppText key={cat} style={styles.badge}>🏷️ {cat}</AppText>
+              <AppText key={cat} style={styles.badge}>
+                🏷️ {cat}
+              </AppText>
             ))}
           </View>
         )}
@@ -148,6 +188,7 @@ export default function DadosConvenio() {
 
   return (
     <View style={styles.container}>
+      {/* 🔹 Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Feather name="arrow-left" size={24} color="#0D3B66" />
@@ -155,6 +196,30 @@ export default function DadosConvenio() {
         <Text style={styles.headerTitle}>Convênios</Text>
       </View>
 
+  
+
+   <View style={styles.filtro}>
+      <Dropdown
+        style={styles.dropdown}
+        containerStyle={styles.dropdownContainer}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        iconStyle={styles.iconStyle}
+        data={cidades.map(c => ({ label: c.name, value: c.slug }))}
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder="Selecione a cidade"
+        value={cidadeSelecionada}
+        onChange={item => {
+          setCidadeSelecionada(item.value);
+        }}
+      />
+    </View>
+
+
+
+      {/* 🔹 Lista */}
       <FlatList
         data={data}
         keyExtractor={(item) => item.id.toString()}
@@ -171,9 +236,20 @@ export default function DadosConvenio() {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingTop: 80, flex: 1, paddingHorizontal: 20, backgroundColor: "#e1e1e167" },
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 20, gap: 16 },
+  container: {
+    paddingTop: 80,
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: "#e1e1e167",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 16,
+  },
   headerTitle: { fontSize: 20, fontWeight: "600", color: "#0D3B66" },
+  
   card: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -186,23 +262,21 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
-  imagem: {
-    flex: 1.2,
-    height: 180,
-  },
+  imagem: { flex: 1.2, height: 180 },
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.3)",
     padding: 10,
   },
-  tituloOverlay: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 16,
-  },
+  tituloOverlay: { color: "#fff", fontWeight: "700", fontSize: 16 },
   info: { flex: 2, padding: 12 },
-  titulo: { fontSize: 16, fontWeight: "600", color: "#0D3B66", marginBottom: 4 },
+  titulo: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#0D3B66",
+    marginBottom: 4,
+  },
   descricao: { fontSize: 14, color: "#333", marginBottom: 6 },
   badgeContainer: { flexDirection: "row", flexWrap: "wrap", marginBottom: 6 },
   badge: {
@@ -217,4 +291,45 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   link: { fontSize: 14, color: "#12adaf", fontWeight: "bold" },
+
+
+dropdownContainer: {
+  borderRadius: 12,
+  backgroundColor: '#fff',
+  elevation: 5, // sombra no Android
+  shadowColor: '#000', // sombra no iOS
+  shadowOpacity: 0.1,
+  shadowOffset: { width: 0, height: 2 },
+  shadowRadius: 8,
+},
+
+filtro: {
+  marginBottom: 12,
+},
+dropdown: {
+  height: 50,
+  borderWidth: 1,
+  borderRadius: 12,
+  paddingHorizontal: 12,
+  backgroundColor: '#fff',
+},
+placeholderStyle: {
+  fontSize: 14,
+  color: '#999',
+},
+selectedTextStyle: {
+  fontSize: 14,
+  color: '#0D3B66',
+  fontWeight: '600',
+},
+iconStyle: {
+  width: 20,
+  height: 20,
+},
+inputSearchStyle: {
+  height: 40,
+  fontSize: 14,
+  color: '#0D3B66',
+},
+
 });

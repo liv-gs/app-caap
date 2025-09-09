@@ -10,6 +10,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useEffect, useState } from "react";
+import { useAuth } from '../context/AuthContext'; // ajuste o caminho
+
 
 
 
@@ -98,6 +100,8 @@ function BannerCard({ title, onPress, Background }: BannerCardProps) {
 export default function Home() {
   const [news, setNews] = useState<NewsType[]>([]);
     const [loading, setLoading] = useState(true);
+    const { usuario } = useAuth();
+
 
     useEffect(() => {
       fetch("https://sites-caapi.mpsip8.easypanel.host/wp-json/wp/v2/posts") // sua API WordPress
@@ -132,14 +136,16 @@ export default function Home() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.row}>
-          <Image
-            source={{ uri: "https://placehold.co/60x60" }} // 👉 aqui coloca sua foto
-            style={styles.avatar}
-          />
-          <View>
-            <Text style={styles.welcome}>Olá, Dr. João Silva</Text>
-            <Text style={styles.subtext}>OAB/PI 12345 · Bem-vindo de volta!</Text>
-          </View>
+         <Image
+          source={{ uri: usuario?.foto || "https://placehold.co/60x60" }}
+          style={styles.avatar}
+        />
+        <View>
+          <Text style={styles.welcome}>Olá, {usuario?.nomeLogado || "Advogado"}</Text>
+          <Text style={styles.subtext}>
+            OAB/PI {usuario?.oab || "----"} · Bem-vindo de volta!
+          </Text>
+        </View>
         </View>
         <TouchableOpacity>
           <Ionicons name="notifications" size={22} color="#0D3B66" /> 

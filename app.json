@@ -1,32 +1,26 @@
 {
   "expo": {
-      "name": "MeuAppTS",
-      "slug": "MeuAppTS",
-      "version": "1.0.0",
-      "orientation": "portrait",
-      "icon": "./assets/color.png",
-      "userInterfaceStyle": "light",
-      "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/.foto.png",
-      "resizeMode": "cover", 
-      "backgroundColor": "#ffffff"
-    },
+    "name": "MeuAppTS",
+    "slug": "MeuAppTS",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/color.png"
-    
-      },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.livgs.meuappts"
     },
-    "web": {
-      "favicon": "./assets/color.png"
-    },
+    "web": {},
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "67e41c7c-8113-420b-9e35-d8ecf7d808de"
+      }
+    }
   }
 }
