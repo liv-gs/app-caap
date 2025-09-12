@@ -1,7 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { AuthStackParamList } from "../../navigation/index"; // ajuste o caminho
 
-const Validação: React.FC = () => {
+type NavProp = NativeStackNavigationProp<AuthStackParamList, "CadastroValidacao">;
+
+const Validacao: React.FC = () => {
+  const navigation = useNavigation<NavProp>();
+
   return (
     <View style={styles.container}>
       {/* Card central */}
@@ -15,7 +22,7 @@ const Validação: React.FC = () => {
       {/* Voltar */}
       <TouchableOpacity
         style={{ marginTop: 32 }}
-        onPress={() => Alert.alert("Voltar", "Navegar para tela de login")}
+        onPress={() => navigation.navigate("Login")}
       >
         <Text style={styles.backText}>Voltar para login</Text>
       </TouchableOpacity>
@@ -59,4 +66,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Validação;
+export default Validacao;

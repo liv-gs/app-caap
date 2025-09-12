@@ -10,7 +10,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 import { AuthStackParamList } from "../navigation/index";
 import { useAuth } from "../context/AuthContext";
-
+import { loginAdvogado } from "../api/api";
 // Importando SVGs como componentes
 import FundoSvg from "../../assets/images/FUNDO.svg";
 import GroupSvg from "../../assets/images/Group.svg";
@@ -30,55 +30,25 @@ export default function LoginScreen() {
   const { setUsuario } = useAuth();
 
 const handleLogin = async () => {
-  setError("");
-  setLoading(true);
-
-  if (!cpf || !senha) {
-    setError("Preencha todos os campos.");
-    setLoading(false);
-    return;
-  }
-
   try {
-    const formData = new FormData();
-    formData.append("cpf", cpf);
-    formData.append("senha", senha);
-
-    const response = await fetch(
-      "https://caapi.org.br/appcaapi/api/logarAdvogado",
-      { method: "POST", body: formData }
-    );
-
-    if (!response.ok) {
-      throw new Error("Erro de conexão com servidor");
-    }
-
-    const data = await response.json();
-    console.log("Resposta da API:", data);
+    const data = await loginAdvogado(cpf, senha);
 
     if (data?.ok === "Usuario logado!") {
       setUsuario(data.usuario);
 
-      // 🔹 Aqui você vai decidir com base nos dados que a API devolver
-      if (data.usuario?.cadastro_validado) {
-        navigation.replace("Home");
-      } else if (data.usuario?.aguardando_validacao) {
-        navigation.replace("CadastroValidacao");
-      } else {
-        navigation.replace("EscolhaTipo"); // começa fluxo de cadastro
-      }
-
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home" }],
+      });
     } else {
       setError("CPF ou OAB inválidos.");
     }
   } catch (err) {
-    console.error(err);
     setError("Erro ao conectar com o servidor.");
   } finally {
     setLoading(false);
   }
 };
-
 
 
   return (

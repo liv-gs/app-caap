@@ -10,7 +10,10 @@ import {
   Platform,
   Alert,
 } from "react-native";
-
+import { useNavigation, useRoute } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { AuthStackParamList } from "../../navigation/index";
+import { concluirCadastro } from "../../api/api";
 // ------------------------
 // helpers
 // ------------------------
@@ -32,6 +35,10 @@ const cidadesPorEstado: Record<string, string[]> = {
 
 // ------------------------
 const FormEnd: React.FC = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const route = useRoute();
+
   const [cep, setCep] = useState("");
   const [estado, setEstado] = useState<string | null>(null);
   const [cidade, setCidade] = useState<string | null>(null);
@@ -40,25 +47,35 @@ const FormEnd: React.FC = () => {
   const [numero, setNumero] = useState("");
   const [complemento, setComplemento] = useState("");
 
-  const canSubmit = useMemo(() => {
-    return (
-      cep.length === 9 &&
-      estado !== null &&
-      cidade !== null &&
-      bairro.trim().length > 0 &&
-      logradouro.trim().length > 0 &&
-      numero.trim().length > 0
-    );
-  }, [cep, estado, cidade, bairro, logradouro, numero]);
 
-  const onSubmit = () => {
-    if (!canSubmit) {
-      Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
-      return;
-    }
-    // aqui você chamaria sua API
-    Alert.alert("Sucesso", "Endereço cadastrado!");
-  };
+
+
+  // ✅ Agora só o CEP é obrigatório
+  const canSubmit = useMemo(() => {
+    return cep.length === 9;
+  }, [cep]);
+
+const onSubmit = async () => {
+  if (!canSubmit) {
+    Alert.alert("Atenção", "Informe um CEP válido.");
+    return;
+  }
+
+  const dados = (route.params as any)?.dados;
+  const carteira = (route.params as any)?.carteira;
+
+  const endereco = { cep, estado, cidade, bairro, logradouro, numero, complemento };
+
+  try {
+    await concluirCadastro({ ...dados, carteira, endereco });
+    // Navega para a tela de validação
+    navigation.navigate("CadastroValidacao");
+  } catch (err) {
+    Alert.alert("Erro", "Não foi possível concluir o cadastro.");
+  }
+};
+
+
 
   return (
     <KeyboardAvoidingView
@@ -95,7 +112,7 @@ const FormEnd: React.FC = () => {
             ]);
           }}
         >
-          <Text style={styles.label}>Estado*</Text>
+          <Text style={styles.label}>Estado</Text>
           <Text style={styles.selectText}>{estado ?? "Selecione"}</Text>
         </TouchableOpacity>
 
@@ -114,7 +131,7 @@ const FormEnd: React.FC = () => {
             ]);
           }}
         >
-          <Text style={styles.label}>Cidade*</Text>
+          <Text style={styles.label}>Cidade</Text>
           <Text style={styles.selectText}>
             {cidade ?? (estado ? "Selecione" : "-")}
           </Text>
@@ -122,7 +139,7 @@ const FormEnd: React.FC = () => {
 
         {/* Bairro */}
         <LabeledInput
-          label="Bairro*"
+          label="Bairro"
           placeholder="Seu bairro"
           value={bairro}
           onChangeText={setBairro}
@@ -130,7 +147,7 @@ const FormEnd: React.FC = () => {
 
         {/* Logradouro */}
         <LabeledInput
-          label="Logradouro (Rua, Avenida ou etc..)*"
+          label="Logradouro (Rua, Avenida ou etc..)"
           placeholder="Logradouro"
           value={logradouro}
           onChangeText={setLogradouro}
@@ -138,7 +155,7 @@ const FormEnd: React.FC = () => {
 
         {/* Número */}
         <LabeledInput
-          label="Número*"
+          label="Número"
           placeholder="Nº"
           value={numero}
           onChangeText={setNumero}
@@ -165,7 +182,7 @@ const FormEnd: React.FC = () => {
 
         {/* Voltar */}
         <TouchableOpacity
-          onPress={() => Alert.alert("Voltar", "Ir para tela anterior")}
+          onPress={() => navigation.goBack()}
           style={{ paddingVertical: 24 }}
         >
           <Text style={styles.backLink}>Voltar</Text>

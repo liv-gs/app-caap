@@ -14,16 +14,18 @@ export type AuthStackParamList = {
   Login: undefined;
   EscolhaTipo: undefined;
 
-  // comum (com param pra saber o tipo)
+  // comum
   CadastroDados: { tipo: "advogado" | "colaborador" };
 
   // advogado
   CadastroCarteira: { dados: any };
+  FormEnd: { dados: any; carteira: { oab: string; frente: string; verso: string } };
   CadastroEndereco: { dados: any; carteira: any };
 
   // validação (comum aos dois)
   CadastroValidacao: undefined;
 
+  // pós login
   Home: undefined;
 };
 
