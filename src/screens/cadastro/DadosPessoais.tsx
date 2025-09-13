@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,24 +10,73 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { AuthStackParamList } from "../../navigation/index"; 
 
-import { useNavigation, useRoute } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { AuthStackParamList } from "../../navigation/index";
-import FundoSvg from "../../../assets/images/FUNDO.svg";
+type FormDadosNavProp = NativeStackNavigationProp<
+  AuthStackParamList,
+  "CadastroDados"
+>;
 
+export type RootStackParamList = {
+  CadastroDados: undefined;
+  CadastroCarteira: {
+    dados: {
+      nome: string;
+      cpf: string;
+      email: string;
+      nascimento: string;
+      rg: string;
+      celular: string;
+    };
+  };
+  CadastroEndereco: undefined;
+};
 
+// ------------------------
+// helpers de máscara/validação
+// ------------------------
+const onlyDigits = (v: string) => v.replace(/\D/g, "");
 
+const maskCPF = (v: string) => {
+  const d = onlyDigits(v).slice(0, 11);
+  const parts = [];
+  if (d.length > 3) parts.push(d.slice(0, 3));
+  if (d.length > 6) parts.push(d.slice(3, 6));
+  if (d.length > 9) parts.push(d.slice(6, 9));
+  let rest = d.slice(9, 11);
+  const base = [d.slice(0, 3), d.slice(3, 6), d.slice(6, 9)]
+    .filter(Boolean)
+    .join(".");
+  return base + (rest ? "-" + rest : d.length > 9 ? "-" : "");
+};
 
+const maskDate = (v: string) => {
+  const d = onlyDigits(v).slice(0, 8);
+  if (d.length <= 2) return d;
+  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+};
 
-function showAlert(title: string, message: string) {
-  if (Platform.OS === "web") {
-    window.alert(`${title}\n\n${message}`);
-  } else {
-    Alert.alert(title, message);
-  }
-}
+const maskPhoneBR = (v: string) => {
+  const d = onlyDigits(v).slice(0, 11);
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 7) return `(${d.slice(0, 2)})${d.slice(2)}`;
+  return `(${d.slice(0, 2)})${d.slice(2, 7)}-${d.slice(7)}`;
+};
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+const isValidCPF = (cpfMasked: string) => {
+  const d = onlyDigits(cpfMasked);
+  return d.length === 11;
+};
+
+// ------------------------
+// checkbox simples
+// ------------------------
 function Checkbox({
   checked,
   onToggle,
@@ -46,13 +95,12 @@ function Checkbox({
   );
 }
 
-
 // ------------------------
 // Tela principal
 // ------------------------
 const FormDados: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
-  const route = useRoute();
+const navigation = useNavigation<FormDadosNavProp>();
+
 
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
@@ -63,162 +111,143 @@ const FormDados: React.FC = () => {
   const [celular, setCelular] = useState("");
   const [email, setEmail] = useState("");
   const [lgpdOk, setLgpdOk] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-const onSubmit = () => {
-  console.log("Botão clicado");
 
-  // Validação
-
-  if (!cpf) return showAlert("Erro", "Preencha o CPF");
-
-  // Formatar CPF no padrão 000.000.000-00
-  const cpfNumeros = cpf.replace(/\D/g, "");
-  const cpfFormatado = cpfNumeros.replace(
-    /(\d{3})(\d{3})(\d{3})(\d{2})/,
-    "$1.$2.$3-$4"
+  const passwordsMatch = useMemo(
+    () => senha.length > 0 && senha === confirma,
+    [senha, confirma]
   );
 
-  const formDados = {
-    nome,
-    email,
-    cpf: cpfFormatado,
-    celular,
-    rg,
-    dataNascimento: nascimento,
-    senha,
-    colaborador: 0, // ou 1 se for colaborador
-  };
+  const canSubmit = useMemo(() => {
+    return (
+      nome.trim().length >= 3 &&
+      isValidCPF(cpf) &&
+      passwordsMatch &&
+      nascimento.length === 10 &&
+      onlyDigits(celular).length >= 10 &&
+      emailRegex.test(email) &&
+      lgpdOk 
+    
+    );
+  }, [nome, cpf, passwordsMatch, nascimento, celular, email, lgpdOk,]);
 
-  console.log("➡️ Indo para próxima etapa:", formDados);
-
-  // Redirecionar sem verificar API
-  if ((route.params as any)?.tipo === "advogado") {
-    navigation.navigate("CadastroCarteira", { dados: formDados });
-  } else {
-    navigation.navigate("CadastroEndereco", {
-      dados: formDados,
-      carteira: null,
-    });
+const onSubmit = () => {
+  if (!canSubmit) {
+    Alert.alert("Atenção", "Preencha todos os campos obrigatórios corretamente.");
+    return;
   }
-};
-
+  
+  navigation.navigate("CadastroCarteira", {
+    dados: {
+      nome,
+      cpf,
+      email,
+      nascimento,
+      rg,
+      celular,
+      senha, // ✅ adicionei a senha aqui
+    },
+  });
+  };
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: "#ffffff" }}
       behavior={Platform.select({ ios: "padding", android: undefined })}
     >
-      {/* Fundo */}
-      <FundoSvg
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-        style={styles.fundosvg}
-      />
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={styles.headerTitle}>Cadastro</Text>
 
-      
+        <LabeledInput
+          label="Nome Completo*"
+          placeholder="Nome"
+          value={nome}
+          onChangeText={setNome}
+        />
 
-      {/* Container branco fixo */}
-      <View style={styles.formContainer}>
-        {/* Scroll apenas no conteúdo */}
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+        <LabeledInput
+          label="CPF*"
+          placeholder="Digite seu CPF"
+          value={cpf}
+          onChangeText={(t) => setCpf(maskCPF(t))}
+          keyboardType="numeric"
+        />
+
+        <View style={styles.row}>
+          <View style={[styles.col, { marginRight: 8 }]}>
+            <LabeledInput
+              label="Senha*"
+              placeholder="Digite uma Senha"
+              value={senha}
+              onChangeText={setSenha}
+              secureTextEntry
+            />
+          </View>
+          <View style={[styles.col, { marginLeft: 8 }]}>
+            <LabeledInput
+              label="Confirma Senha*"
+              placeholder="Confirme a Senha"
+              value={confirma}
+              onChangeText={setConfirma}
+              secureTextEntry
+              error={confirma.length > 0 && !passwordsMatch ? "Senhas não conferem" : undefined}
+            />
+          </View>
+        </View>
+
+        <LabeledInput label="RG*" placeholder="Digite seu RG" value={rg} onChangeText={setRg} />
+        <LabeledInput
+          label="Data de nascimento*"
+          placeholder="dd/mm/AAAA"
+          value={nascimento}
+          onChangeText={(t) => setNascimento(maskDate(t))}
+          keyboardType="numeric"
+        />
+        <LabeledInput
+          label="Celular*"
+          placeholder="(99)99999-9999"
+          value={celular}
+          onChangeText={(t) => setCelular(maskPhoneBR(t))}
+          keyboardType="phone-pad"
+        />
+        <LabeledInput
+          label="E-mail*"
+          placeholder="seuemail@email.com"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        
+
+        {/* LGPD */}
+        <View style={styles.lgpdRow}>
+          <Checkbox checked={lgpdOk} onToggle={() => setLgpdOk((v) => !v)} />
+          <Text style={styles.lgpdText}>
+            Declaro estar ciente da utilização dos Dados na extensão autorizada
+            na Lei Geral de Proteção de Dados – LGPD.
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={onSubmit}
+          disabled={!canSubmit}
+          style={[styles.button, !canSubmit && styles.buttonDisabled]}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Cadastro</Text>
-          </View>
-
-          {/* Inputs */}
-          <LabeledInput
-            label="Nome Completo*"
-            placeholder="Nome"
-            value={nome}
-            onChangeText={setNome}
-          />
-          <LabeledInput
-            label="CPF*"
-            placeholder="Digite seu CPF"
-            value={cpf}
-            onChangeText={setCpf}
-          />
-          <View style={styles.row}>
-            <View style={[styles.col, { marginRight: 8 }]}>
-              <LabeledInput
-                label="Senha*"
-                placeholder="Digite uma Senha"
-                value={senha}
-                onChangeText={setSenha}
-                secureTextEntry
-              />
-            </View>
-            <View style={[styles.col, { marginLeft: 8 }]}>
-              <LabeledInput
-                label="Confirma Senha*"
-                placeholder="Confirme a Senha"
-                value={confirma}
-                onChangeText={setConfirma}
-                secureTextEntry
-              />
-            </View>
-          </View>
-          <LabeledInput
-            label="RG*"
-            placeholder="Digite seu RG"
-            value={rg}
-            onChangeText={setRg}
-          />
-          <LabeledInput
-            label="Data de nascimento*"
-            placeholder="dd/mm/AAAA"
-            value={nascimento}
-            onChangeText={setNascimento}
-          />
-          <LabeledInput
-            label="Celular*"
-            placeholder="(99)99999-9999"
-            value={celular}
-            onChangeText={setCelular}
-          />
-          <LabeledInput
-            label="E-mail*"
-            placeholder="seuemail@email.com"
-            value={email}
-            onChangeText={setEmail}
-          />
-
-          {/* LGPD */}
-          <View style={styles.lgpdRow}>
-            <Checkbox checked={lgpdOk} onToggle={() => setLgpdOk(!lgpdOk)} />
-            <Text style={styles.lgpdText}>
-              Declaro estar ciente da utilização dos Dados na extensão autorizada
-              na Lei Geral de Proteção de Dados Pessoais – LGPD.
-            </Text>
-          </View>
-
-          {/* Botão Avançar */}
-          <TouchableOpacity activeOpacity={0.9} onPress={onSubmit} style={styles.button}>
-            <Text style={styles.buttonText}>Avançar</Text>
-          </TouchableOpacity>
-
-          {/* Link Voltar */}
-          <TouchableOpacity
-            onPress={() => Alert.alert("Voltar", "Ir para a tela de login")}
-            style={{ paddingVertical: 24 }}
-          >
-            <Text style={styles.backLink}>Voltar para login</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+          <Text style={styles.buttonText}>Avançar</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
 
 // ------------------------
-// Input com rótulo
+// Input com rótulo + erro
 // ------------------------
 type LabeledInputProps = {
   label: string;
@@ -226,6 +255,14 @@ type LabeledInputProps = {
   value: string;
   onChangeText: (t: string) => void;
   secureTextEntry?: boolean;
+  error?: string;
+  keyboardType?:
+    | "default"
+    | "numeric"
+    | "email-address"
+    | "phone-pad"
+    | "number-pad";
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
 };
 
 const LabeledInput: React.FC<LabeledInputProps> = ({
@@ -234,10 +271,13 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
   value,
   onChangeText,
   secureTextEntry,
+  error,
+  keyboardType = "default",
+  autoCapitalize = "sentences",
 }) => (
   <View style={{ marginBottom: 16 }}>
     <Text style={styles.label}>{label}</Text>
-    <View style={styles.inputWrapper}>
+    <View style={[styles.inputWrapper, error && { borderColor: "#E11D48" }]}>
       <TextInput
         placeholder={placeholder}
         placeholderTextColor="#b8b8b8"
@@ -245,47 +285,28 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
       />
     </View>
+    {error ? <Text style={styles.errorText}>{error}</Text> : null}
   </View>
 );
 
 // ------------------------
-// Styles
+// Estilos
 // ------------------------
 const styles = StyleSheet.create({
-  fundosvg: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: -1,
-  },
-  formContainer: {
-    flex: 1,
-    margin: 25,
-    marginTop:100,
-    backgroundColor: "#fff",
-    borderRadius: 16,
+  container: {
     paddingHorizontal: 20,
-    paddingVertical: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 16,
+    paddingTop: 12,
+    paddingBottom: 32,
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "600",
+    marginBottom: 12,
+    textAlign: "center",
   },
   label: {
     fontSize: 16,
@@ -359,16 +380,18 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 3,
   },
+  buttonDisabled: {
+    backgroundColor: "#93C5FD",
+  },
   buttonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },
-  backLink: {
-    textAlign: "center",
-    textDecorationLine: "underline",
-    color: "#111",
-    fontSize: 16,
+  errorText: {
+    marginTop: 6,
+    color: "#E11D48",
+    fontSize: 13,
   },
 });
 
