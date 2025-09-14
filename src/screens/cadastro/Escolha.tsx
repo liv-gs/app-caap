@@ -94,11 +94,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   button: {
-    width: "100%",
-    paddingVertical: 16,
+    width: "70%",
+    paddingVertical: 15,
     marginVertical: 10,
     backgroundColor: "#ff0000df",
-    borderRadius: 8,
+    borderRadius: 30,
   },
   buttonText: {
     color: "#fff",

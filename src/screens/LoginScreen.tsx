@@ -15,6 +15,7 @@ import { loginAdvogado } from "../api/api";
 import FundoSvg from "../../assets/images/FUNDO.svg";
 import GroupSvg from "../../assets/images/Group.svg";
 
+import LogoSvg  from "../../assets/images/Camada_1.svg";
 type LoginScreenProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
 
 function FormContainer({ children }: { children: ReactNode }) {
@@ -60,6 +61,18 @@ const handleLogin = async () => {
         preserveAspectRatio="xMidYMid slice"
         style={styles.svgBackground}
       />
+      
+    <View style={styles.logoWrapper}>
+      <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
+    </View>
+
+      <View style={styles.footer}>
+          <GroupSvg
+            width="100%"
+            height={120}
+            preserveAspectRatio="xMidYMid slice"
+          />
+        </View>
 
       <View style={styles.container}>
         <FormContainer>
@@ -110,13 +123,7 @@ const handleLogin = async () => {
         </FormContainer>
 
         {/* Rodapé */}
-        <View style={styles.footer}>
-          <GroupSvg
-            width="100%"
-            height={100}
-            preserveAspectRatio="xMidYMid slice"
-          />
-        </View>
+      
       </View>
     </View>
   );
@@ -136,7 +143,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    justifyContent: "center",
     alignItems: "center",
   },
   formContainer: {
@@ -203,6 +209,15 @@ const styles = StyleSheet.create({
   footer: {
     position: "absolute",
     bottom: 0,
-    width: "100%",
+    width: "120%",
+  },
+  logoWrapper: {
+  alignItems: "center",
+  marginTop: 140,  // distância do topo da tela
+},
+
+  logo: {
+    width: 120, // largura da logo
+    height: 80, // altura da logo
   },
 });

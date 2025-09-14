@@ -16,7 +16,8 @@ import { RouteProp } from "@react-navigation/native";
 import axios from "axios";
 import FormData from "form-data";
 import { AuthStackParamList } from "../../navigation/index";
-
+import FundoSvg from "../../../assets/images/FUNDO.svg";
+import LogoSvg  from "../../../assets/images/Camada_1.svg";
 import { readAsStringAsync, EncodingType } from "expo-file-system/legacy";
 // 🔹 Tipagem do Input
 type InputProps = {
@@ -164,65 +165,75 @@ const FormEnd: React.FC = () => {
     }
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#fff" }}
-      behavior={Platform.select({ ios: "padding", android: undefined })}
-    >
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.container}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* CEP */}
-        <LabeledInput
-          label="CEP*"
-          placeholder="00000-000"
-          value={cep}
-          onChangeText={(t) => setCep(maskCEP(t))}
-          keyboardType="numeric"
-        />
+ return (
+  <KeyboardAvoidingView
+    style={{ flex: 1, backgroundColor: "#ffffff" }}
+    behavior={Platform.select({ ios: "padding", android: undefined })}
+  >
 
-        {/* Estado */}
-        <LabeledInput
-          label="Estado*"
-          placeholder="Digite o estado"
-          value={estado ?? ""}
-          onChangeText={(t) => {
-            setEstado(t);
-            setCidade(null); // limpa a cidade se o estado mudar
-          }}
-        />
+        <View style={styles.fundoWrapper} pointerEvents="none">
+        <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+      </View>
 
-        {/* Cidade */}
-        <LabeledInput
-          label="Cidade*"
-          placeholder="Digite a cidade"
-          value={cidade ?? ""}
-          onChangeText={setCidade}
-        
-        />
+        <View style={styles.logoWrapper}>
+      <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
+    </View>
 
-        {/* Outros campos */}
-        <LabeledInput label="Bairro*" value={bairro} onChangeText={setBairro} />
-        <LabeledInput
-          label="Logradouro*"
-          value={logradouro}
-          onChangeText={setLogradouro}
-        />
-        <LabeledInput
-          label="Número*"
-          value={numero}
-          onChangeText={setNumero}
-          keyboardType="numeric"
-        />
-        <LabeledInput
-          label="Complemento"
-          value={complemento}
-          onChangeText={setComplemento}
-        />
+    {/* 🔹 Wrapper para centralizar */}
+    <View style={styles.containerWrapper}>
+      {/* 🔹 Caixa do formulário com altura controlada */}
+      <View style={styles.formBox}>
+        <Text style={styles.headerTitle}>Endereço</Text>
 
-        {/* Botão de envio */}
+        {/* 🔹 Scroll interno só para os campos */}
+        <ScrollView
+          style={styles.formScroll}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <LabeledInput
+            label="CEP*"
+            placeholder="00000-000"
+            value={cep}
+            onChangeText={(t) => setCep(maskCEP(t))}
+            keyboardType="numeric"
+          />
+          <LabeledInput
+            label="Estado*"
+            placeholder="Digite o estado"
+            value={estado ?? ""}
+            onChangeText={(t) => {
+              setEstado(t);
+              setCidade(null);
+            }}
+          />
+          <LabeledInput
+            label="Cidade*"
+            placeholder="Digite a cidade"
+            value={cidade ?? ""}
+            onChangeText={setCidade}
+          />
+          <LabeledInput label="Bairro*" value={bairro} onChangeText={setBairro} />
+          <LabeledInput
+            label="Logradouro*"
+            value={logradouro}
+            onChangeText={setLogradouro}
+          />
+          <LabeledInput
+            label="Número*"
+            value={numero}
+            onChangeText={setNumero}
+            keyboardType="numeric"
+          />
+          <LabeledInput
+            label="Complemento"
+            value={complemento}
+            onChangeText={setComplemento}
+          />
+        </ScrollView>
+
+        {/* 🔹 Botão fixo dentro do container */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={onSubmit}
@@ -231,9 +242,11 @@ const FormEnd: React.FC = () => {
         >
           <Text style={styles.buttonText}>Concluir</Text>
         </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+      </View>
+    </View>
+  </KeyboardAvoidingView>
+);
+
 };
 
 // 🔹 Componente de input tipado
@@ -261,10 +274,34 @@ const LabeledInput: React.FC<InputProps> = ({
 
 // 🔹 estilos
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
+  containerWrapper: {
+    flex: 1,
+    alignItems: "center", // centraliza horizontalmente
+    paddingHorizontal: 16,
+  },
+  formBox: {
+    width: "100%",
+    maxHeight: "85%", // 🔹 controla a altura para não colar no rodapé
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#EFEFEF",
+    padding: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  formScroll: {
+    flexGrow: 0,
+    marginBottom: 12, // espaço para o botão não sobrepor os campos
   },
   label: {
     fontSize: 16,
@@ -285,24 +322,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
+    marginBottom: 8,
   },
   input: {
     fontSize: 16,
     color: "#111",
-  },
-  selectWrapper: {
-    marginBottom: 16,
-  },
-  selectText: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    height: 54,
-    textAlignVertical: "center",
-    textAlign: "left",
-    lineHeight: 54,
-    borderWidth: 1,
-    borderColor: "#EFEFEF",
   },
   button: {
     backgroundColor: "#2563EB",
@@ -310,7 +334,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 12,
     shadowColor: "#000",
     shadowOpacity: 0.12,
     shadowRadius: 10,
@@ -325,6 +348,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
   },
+  logoWrapper: {
+  alignItems: "center",
+  marginTop: 40,  // distância do topo da tela
+},
+
+  logo: {
+    width: 120, // largura da logo
+    height: 80, // altura da logo
+  },
+    fundoWrapper: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
 });
+
 
 export default FormEnd;
