@@ -11,17 +11,18 @@ import {
   Alert,
 } from "react-native";
 import axios from "axios";
-import FormData from "form-data"; // ✅ importa para usar form-data
-import { useNavigation } from "@react-navigation/native";
+import FormData from "form-data";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/index"; 
 import FundoSvg from "../../../assets/images/FUNDO.svg";
-
 import LogoSvg  from "../../../assets/images/Camada_1.svg";
+
 type FormDadosNavProp = NativeStackNavigationProp<
   AuthStackParamList,
   "CadastroDados"
 >;
+type FormDadosRouteProp = RouteProp<AuthStackParamList, "CadastroDados">;
 
 // ------------------------
 // helpers de máscara/validação
@@ -29,9 +30,8 @@ type FormDadosNavProp = NativeStackNavigationProp<
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
 
 const formatDateForApi = (date: string) => {
-  // assume que date está em "dd/mm/yyyy"
   const [day, month, year] = date.split("/");
-  return `${year}-${month}-${day}`; // "2005-01-14"
+  return `${year}-${month}-${day}`;
 };
 
 const maskCPF = (v: string) => {
@@ -58,22 +58,12 @@ const maskPhoneBR = (v: string) => {
 };
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
-const isValidCPF = (cpfMasked: string) => {
-  const d = onlyDigits(cpfMasked);
-  return d.length === 11;
-};
+const isValidCPF = (cpfMasked: string) => onlyDigits(cpfMasked).length === 11;
 
 // ------------------------
 // checkbox simples
 // ------------------------
-function Checkbox({
-  checked,
-  onToggle,
-}: {
-  checked: boolean;
-  onToggle: () => void;
-}) {
+function Checkbox({ checked, onToggle }: { checked: boolean; onToggle: () => void }) {
   return (
     <TouchableOpacity
       onPress={onToggle}
@@ -90,6 +80,8 @@ function Checkbox({
 // ------------------------
 const FormDados: React.FC = () => {
   const navigation = useNavigation<FormDadosNavProp>();
+  const route = useRoute<FormDadosRouteProp>();
+  const { tipo } = route.params; // "advogado" ou "colaborador"
 
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
@@ -100,19 +92,12 @@ const FormDados: React.FC = () => {
   const [celular, setCelular] = useState("");
   const [email, setEmail] = useState("");
   const [lgpdOk, setLgpdOk] = useState(false);
+  const [oab, setOab] = useState(""); 
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [cpfError, setCpfError] = useState<string | null>(null);
 
-  // 🔹 Erros dinâmicos
-const [emailError, setEmailError] = useState<string | null>(null);
-const [cpfError, setCpfError] = useState<string | null>(null);
-  const [apiError, setApiError] = useState<string | undefined>();
+  const passwordsMatch = useMemo(() => senha.length > 0 && senha === confirma, [senha, confirma]);
 
-  // Validação em tempo real
-  const passwordsMatch = useMemo(
-    () => senha.length > 0 && senha === confirma,
-    [senha, confirma]
-  );
-
-  // Validação de formulário
   const canSubmit = useMemo(() => {
     return (
       nome.trim().length >= 3 &&
@@ -123,59 +108,113 @@ const [cpfError, setCpfError] = useState<string | null>(null);
       emailRegex.test(email) &&
       lgpdOk
     );
-  }, [nome, cpf, passwordsMatch, nascimento, celular, email, lgpdOk, email]);
+  }, [nome, cpf, passwordsMatch, nascimento, celular, email, lgpdOk]);
 
+  // ------------------------
+  // função para verificar CPF/email
+  // ------------------------
+  const verificarCadastro = async (): Promise<boolean> => {
+    try {
+      const data = new FormData();
+      data.append("cpf", onlyDigits(cpf));
+      data.append("email", email);
+      data.append("dataNascimento", formatDateForApi(nascimento));
+
+      const config = { method: "post" as const, maxBodyLength: Infinity, url: "https://caapi.org.br/appcaapi/api/verificarCadastro", headers: { "Content-Type": "multipart/form-data" }, data };
+      const response = await axios.request(config);
+
+      if (response.data?.erro) {
+        Alert.alert("Atenção", response.data.erro);
+        if (response.data.erro.toLowerCase().includes("cpf")) setCpfError(response.data.erro);
+        if (response.data.erro.toLowerCase().includes("e-mail")) setEmailError(response.data.erro);
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      Alert.alert("Erro", "Não foi possível verificar o cadastro. Tente novamente.");
+      console.error(err);
+      return false;
+    }
+  };
+
+  // ------------------------
+  // submissão
+  // ------------------------
+  // ------------------------
+// submissão
+// ------------------------
 const onSubmit = async () => {
-  setEmailError(null);
-  setCpfError(null);
-
   if (!canSubmit) {
     Alert.alert("Atenção", "Preencha todos os campos obrigatórios corretamente.");
     return;
   }
 
+  const valido = await verificarCadastro();
+  if (!valido) return;
+
   try {
     const data = new FormData();
+    data.append("nome", nome);
     data.append("cpf", onlyDigits(cpf));
     data.append("email", email);
+    data.append("senha", senha);
     data.append("dataNascimento", formatDateForApi(nascimento));
+    data.append("rg", rg);
+    data.append("celular", celular);
 
-    const config = {
-      method: "post" as const,
-      maxBodyLength: Infinity,
-      url: "https://caapi.org.br/appcaapi/api/verificarCadastro",
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      data,
-    };
+    // 🔑 agora sempre manda o tipo
+    data.append("colaborador", tipo === "colaborador" ? "1" : "0"); // "advogado" ou "colaborador"
 
-    const response = await axios.request(config);
-    console.log("Resposta API:", response.data);
-
-    if (response.data?.erro) {
-      // ✅ Bloqueia a navegação e mostra o erro
-      Alert.alert("Atenção", response.data.erro);
-
-      if (response.data.erro.toLowerCase().includes("e-mail")) {
-        setEmailError(response.data.erro);
-      }
-      if (response.data.erro.toLowerCase().includes("cpf")) {
-        setCpfError(response.data.erro);
-      }
-
-      return; // 🔥 NÃO NAVEGA
+    if (tipo === "advogado") {
+      // 🚀 advogado → navega para próxima etapa (Carteira)
+      navigation.navigate("CadastroCarteira", {
+        dados: { nome, cpf, email, nascimento, rg, celular, senha, tipo },
+      });
+      return;
     }
 
-    // Se não houver erro → navega
-    navigation.navigate("CadastroCarteira", {
-      dados: { nome, cpf, email, nascimento, rg, celular, senha },
-    });
-  } catch (error: any) {
-    console.error("Erro ao verificar cadastro:", error);
-    Alert.alert("Erro", "Não foi possível verificar o cadastro. Tente novamente.");
+    if (tipo === "colaborador") {
+      // 🚀 colaborador → envia direto
+      if (oab.trim().length < 3) {
+        Alert.alert("Atenção", "Informe um número de OAB válido.");
+        return;
+      }
+
+      data.append("oab", oab);
+
+      for (const [key, value] of (data as any).entries()) {
+     console.log(`${key}:`, value);
+}
+
+
+      const headers = (data as any).getHeaders?.() ?? {
+        "Content-Type": "multipart/form-data",
+      };
+
+      const response = await axios.post(
+        "https://caapi.org.br/appcaapi/api/concluirCadastro",
+        data,
+        { headers }
+      );
+
+      if (response.status === 200 && response.data?.sucesso) {
+        Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
+        navigation.navigate("CadastroValidacao");
+      } else {
+        Alert.alert("Atenção", "Houve um problema ao concluir o cadastro.");
+        console.log("Resposta inesperada:", response.data);
+      }
+    }
+  } catch (err: any) {
+    console.error("Erro ao enviar cadastro:", err?.response?.data || err);
+    Alert.alert(
+      "Erro",
+      "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
+    );
   }
 };
+
+
 
   return (
     <KeyboardAvoidingView
@@ -186,9 +225,9 @@ const onSubmit = async () => {
         <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
       </View>
 
-        <View style={styles.logoWrapper}>
-      <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
-    </View>
+      <View style={styles.logoWrapper}>
+        <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
+      </View>
 
       <View style={styles.containerWrapper}>
         <View style={styles.formBox}>
@@ -207,19 +246,26 @@ const onSubmit = async () => {
               onChangeText={setNome}
               error={nome.trim().length > 0 && nome.trim().length < 3 ? "Digite o nome completo" : undefined}
             />
-
+            {tipo === "colaborador" && (
+              <LabeledInput
+                label="Número da OAB"
+                placeholder="Digite seu número da OAB"
+                value={oab}
+                onChangeText={setOab}
+                keyboardType="numeric"
+                error={oab.trim().length > 0 && oab.trim().length < 3 ? "Número inválido" : undefined}
+              />
+            )}
+             
             <LabeledInput
               label="CPF"
               placeholder="Digite seu CPF"
               value={cpf}
-              onChangeText={(t) => {
-                setCpf(maskCPF(t));
-                if (isValidCPF(t)) setCpfError(undefined);
-              }}
+              onChangeText={(t) => { setCpf(maskCPF(t)); if (isValidCPF(t)) setCpfError(undefined); }}
               keyboardType="numeric"
               error={cpfError}
             />
-
+            
             <View style={styles.row}>
               <View style={[styles.col, { marginRight: 8 }]}>
                 <LabeledInput
@@ -237,70 +283,43 @@ const onSubmit = async () => {
                   value={confirma}
                   onChangeText={setConfirma}
                   secureTextEntry
-                  error={
-                    confirma.length > 0 && !passwordsMatch
-                      ? "Senhas não conferem"
-                      : undefined
-                  }
+                  error={confirma.length > 0 && !passwordsMatch ? "Senhas não conferem" : undefined}
                 />
               </View>
             </View>
-
-            <LabeledInput label="RG"
-             placeholder="Digite seu RG"
-             value={rg} onChangeText={setRg} 
-             />
-
+            <LabeledInput label="RG" placeholder="Digite seu RG" value={rg} onChangeText={setRg} />
             <LabeledInput
               label="Data de nascimento"
               placeholder="dd/mm/aaaa"
               value={nascimento}
               onChangeText={(t) => setNascimento(maskDate(t))}
               keyboardType="numeric"
-              error={
-                nascimento.length > 0 && nascimento.length < 10
-                  ? "Data inválida"
-                  : undefined
-              }
+              error={nascimento.length > 0 && nascimento.length < 10 ? "Data inválida" : undefined}
             />
-
             <LabeledInput
               label="Celular"
-               placeholder="Digite seu número"
+              placeholder="Digite seu número"
               value={celular}
               onChangeText={(t) => setCelular(maskPhoneBR(t))}
               keyboardType="phone-pad"
-              error={
-                onlyDigits(celular).length > 0 && onlyDigits(celular).length < 10
-                  ? "Número inválido"
-                  : undefined
-              }
+              error={onlyDigits(celular).length > 0 && onlyDigits(celular).length < 10 ? "Número inválido" : undefined}
             />
-
             <LabeledInput
               label="E-mail*"
               placeholder="seuemail@email.com"
               value={email}
-              onChangeText={(t) => {
-                setEmail(t);
-                if (emailRegex.test(t)) setEmailError(undefined);
-              }}
+              onChangeText={(t) => { setEmail(t); if (emailRegex.test(t)) setEmailError(undefined); }}
               keyboardType="email-address"
               autoCapitalize="none"
               error={emailError}
             />
 
-            {/* LGPD */}
             <View style={styles.lgpdRow}>
               <Checkbox checked={lgpdOk} onToggle={() => setLgpdOk((v) => !v)} />
               <Text style={styles.lgpdText}>
-                Declaro estar ciente da utilização dos Dados na extensão
-                autorizada na Lei Geral de Proteção de Dados – LGPD.
+                Declaro estar ciente da utilização dos Dados na extensão autorizada na Lei Geral de Proteção de Dados – LGPD.
               </Text>
             </View>
-
-            {/* Erro da API */}
-            {apiError && <Text style={styles.apiError}>{apiError}</Text>}
 
             <TouchableOpacity
               activeOpacity={0.9}
@@ -308,7 +327,7 @@ const onSubmit = async () => {
               disabled={!canSubmit}
               style={[styles.button, !canSubmit && styles.buttonDisabled]}
             >
-              <Text style={styles.buttonText}>Avançar</Text>
+              <Text style={styles.buttonText}>{tipo === "advogado" ? "Avançar" : "Concluir Cadastro"}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -316,7 +335,6 @@ const onSubmit = async () => {
     </KeyboardAvoidingView>
   );
 };
-
 
 // ------------------------
 // Input com rótulo + erro
@@ -328,24 +346,12 @@ type LabeledInputProps = {
   onChangeText: (t: string) => void;
   secureTextEntry?: boolean;
   error?: string;
-  keyboardType?:
-    | "default"
-    | "numeric"
-    | "email-address"
-    | "phone-pad"
-    | "number-pad";
+  keyboardType?: "default" | "numeric" | "email-address" | "phone-pad" | "number-pad";
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
 };
 
 const LabeledInput: React.FC<LabeledInputProps> = ({
-  label,
-  placeholder,
-  value,
-  onChangeText,
-  secureTextEntry,
-  error,
-  keyboardType = "default",
-  autoCapitalize = "sentences",
+  label, placeholder, value, onChangeText, secureTextEntry, error, keyboardType = "default", autoCapitalize = "sentences"
 }) => (
   <View style={{ marginBottom: 16 }}>
     <Text style={styles.label}>{label}</Text>
@@ -366,25 +372,14 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
 );
 
 // ------------------------
-// Estilos
+// Estilos (mesmos que você já tinha)
 // ------------------------
 const styles = StyleSheet.create({
-  fundoWrapper: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  containerWrapper: {
-    flex: 1,
-   paddingTop:10,
-    alignItems: "center", // centraliza horizontalmente
-    paddingHorizontal: 16,
-  },
+  fundoWrapper: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  containerWrapper: { flex: 1, paddingTop: 10, alignItems: "center", paddingHorizontal: 16 },
   formBox: {
     width: "100%",
-    maxHeight: "90%", // 🔹 controla a altura para não colar no final
+    maxHeight: "90%",
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
@@ -396,21 +391,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  formScroll: {
-    flexGrow: 0,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 6,
-    color: "#222",
-    fontWeight: "500",
-  },
+  headerTitle: { fontSize: 22, fontWeight: "700", marginBottom: 16, textAlign: "center" },
+  formScroll: { flexGrow: 0 },
+  label: { fontSize: 16, marginBottom: 6, color: "#222", fontWeight: "500" },
   inputWrapper: {
     backgroundColor: "#fff",
     borderRadius: 24,
@@ -426,97 +409,21 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginBottom: 8,
   },
-  input: {
-    fontSize: 16,
-    color: "#111",
-  },
-  row: {
-    flexDirection: "row",
-  },
-  col: {
-    flex: 1,
-  },
-  lgpdRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  lgpdText: {
-    flex: 1,
-    marginLeft: 10,
-    color: "#333",
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "#c7c7c7",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: "#2563EB",
-    borderColor: "#2563EB",
-  },
-  checkboxMark: {
-    color: "#fff",
-    fontSize: 16,
-    lineHeight: 16,
-    fontWeight: "700",
-  },
-  button: {
-    backgroundColor: "#2563EB",
-    height: 54,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  buttonDisabled: {
-    backgroundColor: "#93C5FD",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  errorText: {
-    marginTop: 6,
-    color: "#E11D48",
-    fontSize: 13,
-  },
-  apiError: {
-  color: "#E11D48",
-  fontSize: 14,
-  fontWeight: "600",
-  marginBottom: 12,
-  textAlign: "center",
-},
-inputError: {
-  borderColor: "#E11D48", // Vermelho
-  shadowColor: "#E11D48", // Sombra leve vermelha
-  shadowOpacity: 0.15,
-  shadowRadius: 6,
-  shadowOffset: { width: 0, height: 2 },
-},
-logoWrapper: {
-  alignItems: "center",
-  marginTop: 40,  // distância do topo da tela
-},
-
-  logo: {
-    width: 120, // largura da logo
-    height: 80, // altura da logo
-  },
-
-
+  input: { fontSize: 16, color: "#111" },
+  row: { flexDirection: "row" },
+  col: { flex: 1 },
+  lgpdRow: { flexDirection: "row", alignItems: "flex-start", marginTop: 8, marginBottom: 16 },
+  lgpdText: { flex: 1, marginLeft: 10, color: "#333" },
+  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: "#c7c7c7", alignItems: "center", justifyContent: "center" },
+  checkboxChecked: { backgroundColor: "#2563EB", borderColor: "#2563EB" },
+  checkboxMark: { color: "#fff", fontSize: 16, lineHeight: 16, fontWeight: "700" },
+  button: { backgroundColor: "#2563EB", height: 54, borderRadius: 28, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  buttonDisabled: { backgroundColor: "#93C5FD" },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  errorText: { marginTop: 6, color: "#E11D48", fontSize: 13 },
+  inputError: { borderColor: "#E11D48", shadowColor: "#E11D48", shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
+  logoWrapper: { alignItems: "center", marginTop: 40 },
+  logo: { width: 120, height: 80 },
 });
-
 
 export default FormDados;
