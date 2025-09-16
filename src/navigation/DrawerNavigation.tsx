@@ -36,7 +36,7 @@ function MainStack() {
         headerTransparent: true,                // importante no native-stack
         headerStyle: { backgroundColor: 'transparent' },
         headerShadowVisible: false,             // remove sombra no iOS
-        headerTintColor: '#12adaf',
+      
       }}
     >
       <Stack.Screen name="Tabs" component={TabsNavigator} options={{ headerShown: true }} />
@@ -55,9 +55,9 @@ export default function DrawerNavigator() {
         headerTransparent: true,
         headerStyle: { backgroundColor: 'transparent' },
         headerShadowVisible: false,
-        drawerStyle: { backgroundColor: '#f0e8e8ff' },
-        drawerActiveTintColor: '#bc7769ff',
-        drawerInactiveTintColor: '#12adaf',
+        drawerStyle: { backgroundColor: '#f3f1f1ff' },
+        drawerActiveTintColor: '#0D3B66',
+        drawerInactiveTintColor: '#0D3B66',
         headerTintColor: '#ffffffff',
       }}
     >

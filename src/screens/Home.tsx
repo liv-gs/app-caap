@@ -11,9 +11,8 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useEffect, useState } from "react";
 import { useAuth } from '../context/AuthContext'; // ajuste o caminho
-
-
-
+import Entypo from '@expo/vector-icons/Entypo';
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 
 // tipo para notícia
 type NewsType = {
@@ -22,6 +21,15 @@ type NewsType = {
   tagColor: string;
   title: string;
   createdAt: string;
+};
+
+
+type TabsParamList = {
+  Home: undefined;
+  Serviços: undefined;
+  Convenio: undefined;
+  Carteirinha: undefined;
+  Perfil: undefined;
 };
 
 
@@ -50,12 +58,6 @@ type BannerCardProps = {
   onPress: () => void;
   Background: React.ComponentType<any>; // componente SVG
 };
-
-
-//SERVICE
-
-
-
 
 
 
@@ -98,6 +100,7 @@ function BannerCard({ title, onPress, Background }: BannerCardProps) {
 
 
 export default function Home() {
+  const navigation = useNavigation<NavigationProp<TabsParamList>>();
   const [news, setNews] = useState<NewsType[]>([]);
     const [loading, setLoading] = useState(true);
     const { usuario } = useAuth();
@@ -166,41 +169,22 @@ export default function Home() {
             <Text style={styles.cardStatus}>✓ Anuidade em dia</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity 
+        style={styles.button}
+        onPress={() => navigation.navigate("Carteirinha")}>
           <Text style={styles.buttonText}>Ver Carteira</Text>
         </TouchableOpacity>
       </View>
-
-
-
-
-
 
     
       {/* Ações Rápidas */}
 
     <Text style={styles.sectionTitle}>Ações Rápidas</Text>
     <View style={styles.grid}>
-      <TouchableOpacity style={styles.gridItem}>
-        <View style={styles.gridIconText}>
-          <View style={styles.iconWrapper}>
-            <FontAwesome5 name="file-invoice" size={20} color="#10567C" />
-          </View>
-          <Text style={styles.gridText}>2ª Via Boleto</Text>
-        </View>
-      </TouchableOpacity>
-
-
-      <TouchableOpacity style={styles.gridItem}>
-        <View style={styles.gridIconText}>
-          <View style={styles.iconWrapper}>
-          <MaterialIcons name="hotel" size={22} color="#10567C" />
-          </View>
-          <Text style={styles.gridText}>Reservar Pousada</Text>
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.gridItem}>
+    
+      <TouchableOpacity  
+      onPress={() => navigation.navigate("Convenio")}
+      style={styles.gridItem}>
         <View style={styles.gridIconText}>
             <View style={styles.iconWrapper}>
               <FontAwesome name="handshake-o" size={20} color="#10567C"/>
@@ -209,7 +193,9 @@ export default function Home() {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.gridItem}>
+      <TouchableOpacity 
+      style={styles.gridItem}
+      onPress={() => navigation.navigate("Serviços")}>
         <View style={styles.gridIconText}>
             <View style={styles.iconWrapper}>
               <FontAwesome name="stethoscope" size={22} color="#10567C" />
@@ -219,21 +205,17 @@ export default function Home() {
       </TouchableOpacity>
     </View>
 
-
-
-
-
       
   <Text style={styles.sectionTitle}>Serviços</Text>
 <View style={styles.serviceItem}>
   <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#DBEAFE" }]}>
-      < FontAwesome5 name="user-md" size={18} color="#1E3A8A" />
+    <View style={[styles.iconPlaceholder, { backgroundColor: "#fedbf8ff" }]}>
+  
+      <Entypo name="scissors" size={18} color="#8a1e68ff" />
 
     </View>
     <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}>Atendimento INSS</Text>
-      <Text style={styles.serviceSubtitle}>Orientação previdenciária</Text>
+      <Text style={styles.serviceTitle}>Salão de Beleza</Text>
     </View>
     <TouchableOpacity>
       <Text style={styles.serviceAction}>Agendar</Text>
@@ -242,12 +224,12 @@ export default function Home() {
 </View>
 <View style={styles.serviceItem}>
   <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#DCFCE7" }]}>
-     <FontAwesome6 name="brain" size={18} color="#16A34A" />
+    <View style={[styles.iconPlaceholder, { backgroundColor: "#dce9fcff" }]}>
+    
+     <FontAwesome6 name="umbrella-beach" size={18} color="#163ea3ff" />
     </View>
     <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}>Atendimento Psicológico</Text>
-      <Text style={styles.serviceSubtitle}>Psicologia Viva</Text>
+      <Text style={styles.serviceTitle}>Pousada Praia dos Advogados</Text>
     </View>
     <TouchableOpacity>
       <Text style={styles.serviceAction}>Acessar</Text>
@@ -256,12 +238,25 @@ export default function Home() {
 </View>
 <View style={styles.serviceItem}>
   <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#FEF9C3" }]}>
-      <FontAwesome name="certificate" size={18} color="#CA8A04" />
+    <View style={[styles.iconPlaceholder, { backgroundColor: "#c3fec7ff" }]}>
+      
+      <FontAwesome name="medkit" size={18} color="#04ca04ff" />
     </View>
     <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}>Certificado Digital</Text>
-      <Text style={styles.serviceSubtitle}>Emissão e renovação</Text>
+      <Text style={styles.serviceTitle}>CAAP + Fisio</Text>
+    </View>
+    <TouchableOpacity>
+      <Text style={styles.serviceAction}>Solicitar</Text>
+    </TouchableOpacity>
+  </View>
+</View>
+<View style={styles.serviceItem}>
+  <View style={styles.row}>
+    <View style={[styles.iconPlaceholder, { backgroundColor: "#FEF9C3" }]}>
+      <FontAwesome name="hotel" size={18} color="#CA8A04" />
+    </View>
+    <View style={{ flex: 1, marginLeft: 12 }}>
+      <Text style={styles.serviceTitle}> Hotel de Trânsito</Text>
     </View>
     <TouchableOpacity>
       <Text style={styles.serviceAction}>Solicitar</Text>
@@ -275,24 +270,23 @@ export default function Home() {
 
 
      {/* Banners */}
-    <BannerCard
-      title="Convênios"
-      Background={ButtonSvg}
-      onPress={() => console.log("Convênios")}
-    />
+     <BannerCard
+        title="Convênios"
+        Background={ButtonSvg}
+        onPress={() => navigation.navigate("Convenio")}
+      />
 
-    <BannerCard
-      title="Minha Caapi"
-      Background={ButtonSvg2}
-      onPress={() => console.log("Minha Caapi")}
-    />
+      <BannerCard
+        title="Minha Caapi"
+        Background={ButtonSvg2}
+        onPress={() => navigation.navigate("Carteirinha")}
+      />
 
-    <BannerCard
-      title="Serviços"
-      Background={ButtonSvg3}
-      onPress={() => console.log("Serviços")}
-    />
-
+      <BannerCard
+        title="Serviços"
+        Background={ButtonSvg3}
+        onPress={() => navigation.navigate("Serviços")}
+      />
 
     {/* Notícias dinâmicas */}
       <View style={styles.newsContainer}>
@@ -450,7 +444,7 @@ iconWrapper: {
   },
   serviceTitle: { fontSize: 15, fontWeight: "600", color: "#0D3B66" },
   serviceSubtitle: { fontSize: 13, color: "#666" },
-  serviceAction: { color: "#0D3B66", fontWeight: "bold", fontSize: 14 },
+  serviceAction: { color: "#0D3B66", fontWeight: "bold", fontSize: 14, },
 
 
   newsContainer: { marginTop: 20, },
