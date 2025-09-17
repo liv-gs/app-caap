@@ -1,10 +1,10 @@
-// Service.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -13,81 +13,38 @@ import { Feather } from "@expo/vector-icons";
 import type { MainStackParamList } from "../types/types";
 
 
-export type CardProps = {
+export type ApiService = {
+  id: number;
   title: string;
   description: string;
-  icon: keyof typeof Feather.glyphMap; 
+  imagem_destacada?: string;
+  icon: keyof typeof Feather.glyphMap;
 };
 
 
-type CardNavigationProp = NativeStackNavigationProp<MainStackParamList, "Service">;
 
+type CardNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  "Service"
+>;
 
-const services: CardProps[] = [
-  {
-    title: "Auxílio",
-    description:
-      "Benefícios em sua rede de proteção social, que auxiliam os advogados e suas famílias nos momentos em que mais precisam.",
-    icon: "heart",
-  },
-  {
-    title: "Convênios",
-    description:
-      "Ampla relação de convênios em diversos serviços e estabelecimentos, garantindo descontos exclusivos para profissionais devidamente inscritos na OAB/PI.",
-    icon: "briefcase",
-  },
-  {
-    title: "Fisioterapia",
-    description:
-      "Consultório para Fisioterapia, totalmente equipado com profissionais qualificados para atender em diversas especialidades.",
-    icon: "activity",
-  },
-  {
-    title: "Odonto",
-    description:
-      "Consultórios e profissionais especializados que cuidam do seu sorriso e também do sorriso da sua família.",
-    icon: "smile",
-  },
-  {
-    title: "Clube da Advocacia",
-    description:
-      "Espaço de lazer para receber os advogados, familiares e convidados durante os finais de semana e feriados.",
-    icon: "users",
-  },
-  {
-    title: "Hotel de Trânsito",
-    description:
-      "Com a finalidade de hospedar advogados em trânsito na cidade de Teresina para o exercício de suas atividades profissionais.",
-    icon: "home",
-  },
-  {
-    title: "OAB Prev",
-    description:
-      "Fundo de previdência complementar com benefícios exclusivos para advogados e familiares dependentes inscritos na Caixa de Assistência dos Advogados.",
-    icon: "shield",
-  },
-  {
-    title: "Plano de Saúde",
-    description:
-      "Num só plano preventivo e com foco na qualidade de vida do usuário, o advogado tem o direito de ter acesso à assistência à saúde sempre que precisar.",
-    icon: "heart",
-  },
-  {
-    title: "Pousada Praia dos Advogados",
-    description:
-      "Em Luís Correia, a Caixa disponibiliza aos advogados uma pousada aconchegante e confortável próxima da praia de Atalaia.",
-    icon: "umbrella",
-  },
-  {
-    title: "Salão de Beleza",
-    description:
-      "O Salão de Beleza oferece atendimento exclusivo para advogados com preços diferenciados.",
-    icon: "scissors",
-  },
-];
+// 🔹 Mapeamento de ícones por título (você pode expandir conforme sua API)
+const iconMap: Record<string, keyof typeof Feather.glyphMap> = {
+  Auxílio: "heart",
+  Convênios: "briefcase",
+  Fisioterapia: "activity",
+  Odonto: "smile",
+  "Clube da Advocacia": "users",
+  "Hotel de Trânsito": "home",
+  "OAB Prev": "shield",
+  "Plano de Saúde": "heart",
+  "Pousada Praia dos Advogados": "umbrella",
+  "Salão de Beleza": "scissors",
+};
 
-// Componente do Card
-const Card = ({ title, description, icon }: CardProps) => {
+type CardProps = ApiService;
+
+const Card = ({ id, title, description, icon, imagem_destacada }: CardProps) => {
   const navigation = useNavigation<CardNavigationProp>();
 
   return (
@@ -95,12 +52,27 @@ const Card = ({ title, description, icon }: CardProps) => {
       style={styles.card}
       activeOpacity={0.8}
       onPress={() =>
-        navigation.navigate("DadosService", { service: { title, description } })
+        navigation.navigate("DadosService", {
+          service: {
+            id,
+            title,
+            description,
+            imagem_destacada,
+            icon
+         
+          },
+          
+        })
       }
     >
       <View style={styles.row}>
         <View style={styles.leftSection}>
-          <Feather name={icon} size={22} color="#fff" style={{ marginRight: 10 }} />
+          <Feather
+            name={icon}
+            size={22}
+            color="#fff"
+            style={{ marginRight: 10 }}
+          />
           <Text style={styles.title}>{title}</Text>
         </View>
         <Feather name="chevron-right" size={20} color="#fff" />
@@ -110,8 +82,48 @@ const Card = ({ title, description, icon }: CardProps) => {
   );
 };
 
-// Tela principal Service
 export default function Service() {
+  const [services, setServices] = useState<ApiService[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch(
+          "https://sites-caapi.mpsip8.easypanel.host/wp-json/caapi/v1/servicos"
+        );
+        const data = await res.json();
+
+        const mapped = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          description: item.resumo || item.content,
+          imagem_destacada: item.imagem_destacada,
+          icon: iconMap[item.title] || "briefcase", 
+        
+
+        }
+      ));
+
+        setServices(mapped);
+      } catch (error) {
+        console.error("Erro ao buscar serviços:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color="#10567C" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       style={styles.container}
@@ -120,12 +132,14 @@ export default function Service() {
     >
       <Text style={styles.pageTitle}>Serviços</Text>
       <View style={styles.cardsWrapper}>
-        {services.map((item, index) => (
+        {services.map((item) => (
           <Card
-            key={index}
+            key={item.id}
+            id={item.id}
             title={item.title}
             description={item.description}
             icon={item.icon}
+            imagem_destacada={item.imagem_destacada}
           />
         ))}
       </View>
@@ -133,7 +147,7 @@ export default function Service() {
   );
 }
 
-// Estilos
+// 🔹 Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,

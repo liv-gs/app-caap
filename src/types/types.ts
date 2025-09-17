@@ -1,29 +1,46 @@
-import { Feather } from "@expo/vector-icons"; // Ícones
+// navigation/types.ts
+import { Feather } from "@expo/vector-icons";
 
-// types.ts
-export type RootStackParamList = {
-  Categorias: undefined;
-  DadosConvenio: { categoria: string };
-};
-
-
-// types.ts
+// Tipos dos parâmetros do Stack principal
 export type MainStackParamList = {
-  Service: undefined;
-  DadosService: { service: { title: string; description: string } }; // ← aqui
-  DadosConvenio: undefined;
   Tabs: undefined;
+  Service: undefined;
+
+  DadosService: {
+    service: {
+      id: number;
+      title: string;
+      description: string;
+      imagem_destacada?: string | null;
+      icon: keyof typeof Feather.glyphMap;
+    };
+  };
+
+  DadosConvenio: {
+    convenio: {
+      id: number;
+      nome: string;
+      descricao: string;
+      imagem_destacada?: string | null;
+    };
+  };
+
+  agendamento: undefined;
 };
 
-
-
-type CardProps = {
+type Props = {
+  usuario: Usuario;
+};
+// Tipos dos cards de serviço
+export type CardProps = {
+  id: number;
   title: string;
   description: string;
-  icon: keyof typeof Feather.glyphMap; // nome do ícone Feather
+  icon: keyof typeof Feather.glyphMap; // ícone do Feather
+  imagem_destacada?: string | null;
 };
 
-
+// Tipos de outro fluxo de formulários
 export type ParametroDados = {
   FormDados: undefined;
   OabCarteira: {

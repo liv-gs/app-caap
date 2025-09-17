@@ -12,12 +12,15 @@ import LoginScreen from '../screens/LoginScreen';
 import LogoSvg from '../../assets/images/Camada_1.svg';
 import HeaderBg from '../../assets/images/FUNDO.svg';
 import DadosConvenio from '../screens/DadosConvenio';
+import Calendar from '../screens/agendamento';
 import DadosService from '../screens/DadosService';
 
-const Drawer = createDrawerNavigator();
-const Stack = createNativeStackNavigator();
+import { MainStackParamList } from "../types/types"; // tipagem unificada
 
-// Componente para usar no headerBackground
+const Drawer = createDrawerNavigator();
+const Stack = createNativeStackNavigator<MainStackParamList>();
+
+// Componente para header background
 function HeaderBackground() {
   return (
     <View style={{ position: 'absolute', top: 0, left:0, right:0, bottom:0 }}>
@@ -28,21 +31,21 @@ function HeaderBackground() {
     </View>
   );
 }
+
 function MainStack() {
   return (
     <Stack.Navigator
       screenOptions={{
         headerBackground: () => <HeaderBackground />,
-        headerTransparent: true,                // importante no native-stack
+        headerTransparent: true,
         headerStyle: { backgroundColor: 'transparent' },
-        headerShadowVisible: false,             // remove sombra no iOS
-      
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen name="Tabs" component={TabsNavigator} options={{ headerShown: true }} />
       <Stack.Screen name="DadosService" component={DadosService} options={{ headerShown: true }} />
       <Stack.Screen name="DadosConvenio" component={DadosConvenio} options={{ headerShown: true }} />
-
+      <Stack.Screen name="agendamento" component={Calendar} options={{ headerShown: true }} />
     </Stack.Navigator>
   );
 }
@@ -58,7 +61,7 @@ export default function DrawerNavigator() {
         drawerStyle: { backgroundColor: '#f3f1f1ff' },
         drawerActiveTintColor: '#0D3B66',
         drawerInactiveTintColor: '#0D3B66',
-        headerTintColor: '#ffffffff',
+        headerTintColor: '#fff',
       }}
     >
       <Drawer.Screen
@@ -82,8 +85,6 @@ export default function DrawerNavigator() {
           };
         }}
       />
-
-
 
       <Drawer.Screen
         name="LoginScreen"
