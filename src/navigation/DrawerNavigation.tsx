@@ -14,6 +14,7 @@ import HeaderBg from '../../assets/images/FUNDO.svg';
 import DadosConvenio from '../screens/DadosConvenio';
 import Calendar from '../screens/agendamento';
 import DadosService from '../screens/DadosService';
+import Home from '../screens/Home';
 
 import { MainStackParamList } from "../types/types"; // tipagem unificada
 
@@ -92,6 +93,18 @@ export default function DrawerNavigator() {
         options={{
           title: '',
           drawerLabel: 'Voltar para Login',
+          headerShown: false,
+          drawerIcon: ({ color, size }) => (
+            <SimpleLineIcons name="logout" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Home"
+        component={Home}
+        options={{
+          title: '',
+          drawerLabel: 'Home',
           headerShown: false,
           drawerIcon: ({ color, size }) => (
             <SimpleLineIcons name="logout" color={color} size={size} />

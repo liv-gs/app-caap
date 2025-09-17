@@ -5,7 +5,6 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { SvgUri } from "react-native-svg";
-
 import type { MainStackParamList } from "../types/types";
 
 type RouteParams = RouteProp<MainStackParamList, "DadosService">;
@@ -35,7 +34,8 @@ export default function DadosService() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate("agendamento")}
+          onPress={() => navigation.navigate("agendamento",{service })
+        }
         >
           <View style={styles.buttonContent}>
             <Text style={styles.buttonText}>Ir para Agendamento</Text>

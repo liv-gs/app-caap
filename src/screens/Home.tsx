@@ -100,6 +100,7 @@ function BannerCard({ title, onPress, Background }: BannerCardProps) {
 
 
 export default function Home() {
+
   const navigation = useNavigation<NavigationProp<TabsParamList>>();
   const [news, setNews] = useState<NewsType[]>([]);
     const [loading, setLoading] = useState(true);

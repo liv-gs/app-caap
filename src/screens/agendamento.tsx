@@ -9,71 +9,68 @@ import {
   StyleSheet,
 } from "react-native";
 import { Calendar as RNCalendar } from "react-native-calendars";
+import { useRoute, RouteProp } from "@react-navigation/native";
+import { normalizeService } from "../context/normalizeService";
+import type { MainStackParamList } from "../types/types";
+import { useAuth } from "../context/AuthContext";
 
-type Usuario = {
-  idUsuarioLogado: number;
-  nomeLogado: string;
-  email: string;
-  cpf: string;
-  foto: string;
-  validado: number;
-  oab: string;
-  celular: string;
-  tipo: string;
-  primeiroAcesso?: string | null;
-  dataNascimento: string;
-  validadeCarteira: string;
-  endereco: any;
-  hash: string;
-  titular?: string | null;
-};
+type RouteParams = RouteProp<MainStackParamList, "agendamento">;
 
-type Props = {
-  service: { id: number; tipo: string };
-  usuarioLogado: Usuario;
-};
+export default function Calendar() {
+  const route = useRoute<RouteParams>();
+  const { usuario } = useAuth();
+  const service = normalizeService(route.params.service);
 
-export default function Calendar({ service, usuarioLogado }: Props) {
-  
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [events, setEvents] = useState<Record<string, any>>({});
-  const [modalVisible, setModalVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const horariosDisponiveis = service.horarios || [];
+  const diasPermitidos = service.dias || [];
 
   function formatKey(date: Date) {
     return date.toISOString().split("T")[0];
   }
 
-  async function buscarAgendamentos() {
-    try {
-      const res = await fetch(
-        `https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/listar?servico_id=${service.id}`,
-        {
-          headers: {
-            Authorization:
-              "Basic YXBpYXBwOkw2SkcgMmtoTSBLamk5IHA3WUwgbHY0MiBMQXdM",
-          },
-        }
-      );
+async function buscarAgendamentos() {
+  try {
+    const res = await fetch(
+      `https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/listar?servico_id=${service.id}`,
+      {
+        headers: {
+          Authorization:
+            "Basic YXBpYXBwOkw2SkcgMmtoTSBLamk5IHA3WUwgbHY0MiBMQXdM",
+        },
+      }
+    );
 
-      if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
 
-      const data = await res.json();
+    const formatted: Record<string, any> = {};
 
-      const formatted: Record<string, any> = {};
-      data.forEach((ag: any) => {
-        formatted[ag.data_iso] = {
-          ocupado: true,
-          horarios: [...(formatted[ag.data_iso]?.horarios ?? []), ag.hora],
-        };
-      });
+    data.forEach((ag: any) => {
+      const key = ag.data_iso;
+      const horariosExistentes = formatted[key]?.horarios ?? [];
+      formatted[key] = {
+        horarios: [...horariosExistentes, ag.hora],
+        ocupado: false, // inicialmente falso
+      };
+    });
 
-      setEvents(formatted);
-    } catch (err) {
-      console.error("Erro ao buscar agendamentos", err);
-    }
+    // Marca o dia como ocupado se todos os horários estiverem preenchidos
+    Object.keys(formatted).forEach((key) => {
+      const totalHorarios = horariosDisponiveis.length;
+      formatted[key].ocupado = formatted[key].horarios.length >= totalHorarios;
+    });
+
+    setEvents(formatted);
+  } catch (err) {
+    console.error("Erro ao buscar agendamentos", err);
   }
+}
+
 
   async function confirmarAgendamento() {
     if (!selectedDate) return;
@@ -86,10 +83,12 @@ export default function Calendar({ service, usuarioLogado }: Props) {
 
       const payload = {
         data: dataFormatada,
-        hora: service.tipo === "hotel" ? "DIARIA" : selectedHorario,
-        usuario: usuarioLogado,
+        hora: service.diaria ? "DIARIA" : selectedHorario,
+        usuario,
         servico_id: service.id,
       };
+
+      console.log("📤 Payload enviado:", payload);
 
       const res = await fetch(
         "https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/cadastrar",
@@ -104,27 +103,19 @@ export default function Calendar({ service, usuarioLogado }: Props) {
         }
       );
 
+      console.log("📥 Status da resposta:", res.status);
+
       if (!res.ok) {
         const err = await res.text();
         throw new Error(err);
       }
 
+      const data = await res.json();
+      console.log("✅ Resposta da API:", data);
+
       Alert.alert("Sucesso", "Agendamento realizado com sucesso!");
-
-      // Atualiza calendário local
-      setEvents((prev) => ({
-        ...prev,
-        [formatKey(selectedDate)]: {
-          ocupado: true,
-          horarios: [
-            ...(prev[formatKey(selectedDate)]?.horarios ?? []),
-            payload.hora,
-          ],
-        },
-      }));
-
+      await buscarAgendamentos();
       setConfirmVisible(false);
-      setModalVisible(false);
     } catch (e: any) {
       console.error("Erro ao agendar", e);
       Alert.alert("Erro", "Não foi possível cadastrar o agendamento.");
@@ -134,16 +125,6 @@ export default function Calendar({ service, usuarioLogado }: Props) {
   useEffect(() => {
     buscarAgendamentos();
   }, []);
-
-  const horariosDisponiveis = [
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "14:00",
-    "15:00",
-    "16:00",
-  ];
 
   return (
     <View style={styles.container}>
@@ -159,77 +140,85 @@ export default function Calendar({ service, usuarioLogado }: Props) {
         )}
         onDayPress={(day) => {
           const date = new Date(day.dateString);
+          const diaSemana = date.getDay();
+
+          if (!diasPermitidos.includes(diaSemana)) {
+            Alert.alert("Indisponível", "Este dia não está disponível para agendamento.");
+            return;
+          }
+
           setSelectedDate(date);
-          setModalVisible(true);
+          
+          if (service.diaria) {
+            setSelectedHorario(null); // força o valor
+          } else {
+            setSelectedHorario(null);
+          }
+
+           console.log("Diária?", service.diaria, "Data selecionada:", date);
+          setConfirmVisible(true);
         }}
       />
 
-      {/* Modal para escolher horário */}
-      <Modal visible={modalVisible} animationType="slide" transparent>
+      {/* Modal único de confirmação */}
+      <Modal visible={confirmVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Selecione um horário para {selectedDate?.toLocaleDateString()}
-            </Text>
+            <Text style={styles.modalTitle}>Confirmar agendamento</Text>
 
-            <FlatList
-              data={horariosDisponiveis}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => {
-                const ocupado =
-                  events[formatKey(selectedDate!)]?.horarios.includes(item);
-                return (
-                  <TouchableOpacity
-                    style={[
-                      styles.horarioBtn,
-                      ocupado
-                        ? styles.horarioBtnDisabled
-                        : styles.horarioBtnAvailable,
-                    ]}
-                    disabled={ocupado}
-                    onPress={() => {
-                      setSelectedHorario(item);
-                      setConfirmVisible(true);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.horarioBtnText,
-                        ocupado && { color: "#888" },
-                      ]}
-                    >
-                      {item}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
-
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={styles.cancelBtnModal}
-            >
-              <Text style={styles.cancelBtnTextModal}>Fechar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal de confirmação */}
-      <Modal visible={confirmVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirmar agendamento?</Text>
             <Text style={styles.dateText}>
-              {selectedDate?.toLocaleDateString()} às {selectedHorario}
+              {selectedDate?.toLocaleDateString()}
+              {service.diaria
+                ? ""
+                : selectedHorario
+                ? ` às ${selectedHorario}`
+                : ""}
             </Text>
 
-            <TouchableOpacity
-              onPress={confirmarAgendamento}
-              style={styles.confirmBtn}
-            >
-              <Text style={styles.confirmBtnText}>Confirmar</Text>
-            </TouchableOpacity>
+            {/* Se NÃO for diária → lista de horários */}
+            {!service.diaria && selectedDate && (
+              <FlatList
+                data={horariosDisponiveis}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => {
+                  const ocupado =
+                    events[formatKey(selectedDate!)]?.horarios.includes(item);
+
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.horarioBtn,
+                        ocupado
+                          ? styles.horarioBtnDisabled
+                          : styles.horarioBtnAvailable,
+                        selectedHorario === item && {
+                          borderColor: "#0D3B66",
+                          borderWidth: 2,
+                        },
+                      ]}
+                      disabled={ocupado}
+                      onPress={() => setSelectedHorario(item)}
+                    >
+                      <Text
+                        style={[
+                          styles.horarioBtnText,
+                          ocupado && { color: "#888" },
+                        ]}
+                      >
+                        {item}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
+
+            {/* Botão confirmar só aparece se já tem data e (se necessário) horário */}
+            {selectedDate && (service.diaria || selectedHorario) && (
+              <TouchableOpacity onPress={confirmarAgendamento} style={styles.confirmBtn}>
+                <Text style={styles.confirmBtnText}>Confirmar</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               onPress={() => setConfirmVisible(false)}
@@ -245,7 +234,7 @@ export default function Calendar({ service, usuarioLogado }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF" },
+  container: { flex: 1, backgroundColor: "#FFF", paddingTop:100, },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -305,12 +294,4 @@ const styles = StyleSheet.create({
     borderColor: "#E74C3C",
   },
   cancelBtnText: { color: "#E74C3C", fontWeight: "700", fontSize: 16 },
-  cancelBtnModal: {
-    backgroundColor: "#E74C3C",
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginTop: 12,
-    alignItems: "center",
-  },
-  cancelBtnTextModal: { color: "#fff", fontWeight: "700", fontSize: 16 },
 });

@@ -1,20 +1,11 @@
-// navigation/types.ts
-import { Feather } from "@expo/vector-icons";
+import type { ApiService } from "../types/ApiService";
+import type { Usuario } from "../types/Usuario";
 
-// Tipos dos parâmetros do Stack principal
 export type MainStackParamList = {
   Tabs: undefined;
   Service: undefined;
 
-  DadosService: {
-    service: {
-      id: number;
-      title: string;
-      description: string;
-      imagem_destacada?: string | null;
-      icon: keyof typeof Feather.glyphMap;
-    };
-  };
+  DadosService: { service: ApiService };
 
   DadosConvenio: {
     convenio: {
@@ -22,23 +13,16 @@ export type MainStackParamList = {
       nome: string;
       descricao: string;
       imagem_destacada?: string | null;
+      usuario: Usuario;
+      tipo: string;
     };
   };
 
-  agendamento: undefined;
+  agendamento: { service: ApiService }; // ✅ agora recebe igual DadosService
 };
 
-type Props = {
-  usuario: Usuario;
-};
 // Tipos dos cards de serviço
-export type CardProps = {
-  id: number;
-  title: string;
-  description: string;
-  icon: keyof typeof Feather.glyphMap; // ícone do Feather
-  imagem_destacada?: string | null;
-};
+export type CardProps = Pick<ApiService, "id" | "title" | "description" | "icon" | "imagem_destacada">;
 
 // Tipos de outro fluxo de formulários
 export type ParametroDados = {
