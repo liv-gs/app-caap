@@ -4,6 +4,10 @@ npx expo start
 expo install expo-image-picker
 
 
+
+
+
+
 npx expo start
 
 65497007368
