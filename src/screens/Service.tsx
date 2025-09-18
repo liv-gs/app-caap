@@ -11,19 +11,16 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import type { MainStackParamList } from "../types/types";
-import type { Usuario } from "../types/Usuario";
 import { useAuth } from "../context/AuthContext";
-import {ApiService} from "../types/ApiService"
-
-
-
+import { ApiService } from "../types/ApiService";
+import { normalizeService } from "../context/normalizeService";
 
 type CardNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
   "Service"
 >;
 
-// 🔹 Mapeamento de ícones por título (você pode expandir conforme sua API)
+// 🔹 Mapeamento de ícones por título
 const iconMap: Record<string, keyof typeof Feather.glyphMap> = {
   Auxílio: "heart",
   Convênios: "briefcase",
@@ -39,7 +36,7 @@ const iconMap: Record<string, keyof typeof Feather.glyphMap> = {
 
 type CardProps = ApiService;
 
-const Card = ({ id, title, description, icon, imagem_destacada, usuario, tipo, horarios, diaria, dias }: CardProps) => {
+const Card = (service: CardProps) => {
   const navigation = useNavigation<CardNavigationProp>();
 
   return (
@@ -48,41 +45,29 @@ const Card = ({ id, title, description, icon, imagem_destacada, usuario, tipo, h
       activeOpacity={0.8}
       onPress={() =>
         navigation.navigate("DadosService", {
-          service: {
-            id,
-            title,
-            description,
-            imagem_destacada,
-            icon,
-            usuario,
-            tipo,
-            horarios: horarios || [],
-            diaria: diaria || false,
-            dias: dias || [1, 2, 3, 4, 5]
-            
-          },
+          service, // já passa o objeto normalizado inteiro
         })
       }
     >
       <View style={styles.row}>
         <View style={styles.leftSection}>
           <Feather
-            name={icon}
+            name={service.icon}
             size={22}
             color="#fff"
             style={{ marginRight: 10 }}
           />
-          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.title}>{service.title}</Text>
         </View>
         <Feather name="chevron-right" size={20} color="#fff" />
       </View>
-      <Text style={styles.description}>{description}</Text>
+      <Text style={styles.description}>{service.description}</Text>
     </TouchableOpacity>
   );
 };
 
 export default function Service() {
-   const { usuario } = useAuth();
+  const { usuario } = useAuth();
   const [services, setServices] = useState<ApiService[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -94,18 +79,13 @@ export default function Service() {
         );
         const data = await res.json();
 
-        const mapped = data.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          description: item.resumo || item.content,
-          imagem_destacada: item.imagem_destacada,
-          icon: iconMap[item.title] || "briefcase",
-          usuario: item.usuario, // se a API enviar
-          tipo: item.diaria ? "hotel" : "horario",
-          horarios: item.horarios || [],   // <- garante que vai para o Calendar
-          dias: item.dias || [0,1,2,3,4,5,6], // <- dias permitidos
-          diaria: item.diaria || false,    // <- se for diária
-        }));
+        const mapped: ApiService[] = data.map((item: any) => {
+          const normalized = normalizeService(item);
+          return {
+            ...normalized,
+            icon: iconMap[item.titulo] || "briefcase", // ícone tratado aqui
+          };
+        });
 
         setServices(mapped);
       } catch (error) {
@@ -134,20 +114,8 @@ export default function Service() {
     >
       <Text style={styles.pageTitle}>Serviços</Text>
       <View style={styles.cardsWrapper}>
-        {services.map((item) => (
-          <Card
-            key={item.id}
-            id={item.id}
-            title={item.title}
-            description={item.description}
-            icon={item.icon}
-            imagem_destacada={item.imagem_destacada}
-            usuario={item.usuario}
-            tipo={item.tipo}
-            horarios={item.horarios}   // <- obrigatório
-            diaria={item.diaria}       // <- obrigatório
-            dias={item.dias}           // <- obrigatório
-          />
+        {services.map((service) => (
+          <Card key={service.id} {...service} />
         ))}
       </View>
     </ScrollView>

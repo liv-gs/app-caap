@@ -139,25 +139,26 @@ async function buscarAgendamentos() {
           ])
         )}
         onDayPress={(day) => {
-          const date = new Date(day.dateString);
-          const diaSemana = date.getDay();
+      const date = new Date(day.dateString);
+      const diaSemana = date.getDay();
 
-          if (!diasPermitidos.includes(diaSemana)) {
-            Alert.alert("Indisponível", "Este dia não está disponível para agendamento.");
-            return;
-          }
+      if (!diasPermitidos.includes(diaSemana)) {
+        Alert.alert("Indisponível", "Este dia não está disponível para agendamento.");
+        return;
+      }
 
-          setSelectedDate(date);
-          
-          if (service.diaria) {
-            setSelectedHorario(null); // força o valor
-          } else {
-            setSelectedHorario(null);
-          }
+      setSelectedDate(date);
 
-           console.log("Diária?", service.diaria, "Data selecionada:", date);
-          setConfirmVisible(true);
-        }}
+      if (service.diaria) {
+        setSelectedHorario("DIARIA"); // <-- garante que a condição fique true
+      } else {
+        setSelectedHorario(null);
+      }
+
+      console.log("Diária?", service.diaria, "Data selecionada:", date);
+      setConfirmVisible(true);
+    }}
+
       />
 
       {/* Modal único de confirmação */}
