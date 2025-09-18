@@ -21,10 +21,10 @@ export function normalizeService(apiData: any): ApiService {
   return {
     id: apiData.id,
     title: apiData.titulo,
-    description: apiData.resumo ?? "",
-    imagem_destacada: apiData.imagem_destacada || null,
+    description: apiData.resumo ?? apiData.content ?? null,
     icon: "calendar", // ajusta conforme seu caso
     usuario: {} as any, // você injeta pelo contexto
+    content: apiData.content ?? null,
 
     tipo: apiData.diaria ? "hotel" : horarios.length > 0 ? "salao" : "outro",
 
