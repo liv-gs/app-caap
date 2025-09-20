@@ -1,4 +1,5 @@
 // src/api/auth.ts
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // --- Funções de API usando fetch ---
 // Obs: todas retornam JSON e lançam erro se não der certo
@@ -39,19 +40,50 @@ export const loginAdvogado = async (cpf: string, senha: string) => {
   });
 
   if (!response.ok) throw new Error("Erro de conexão com servidor");
-  return response.json();
+  const data = await response.json();
+
+  // Se logou certo, guardamos o usuário e o hash
+  if (data?.usuario) {
+    await setUsuarioLogado(data.usuario);
+  }
+
+  return data;
 };
 
-// Sessão (opcional se não quiser AsyncStorage)
-// Aqui só uma forma de guardar dados em memória se quiser
+// ---------------- Sessão ----------------
+
+// aqui vai ficar em memória também (pra acesso rápido)
 let usuarioLogado: any = null;
 
-export const setUsuarioLogado = (usuario: any) => {
+// salvar em memória + storage
+export const setUsuarioLogado = async (usuario: any) => {
   usuarioLogado = usuario;
+  await AsyncStorage.setItem("usuario", JSON.stringify(usuario));
+  if (usuario.hash) {
+    await AsyncStorage.setItem("hash", usuario.hash);
+  }
 };
 
-export const getUsuarioLogado = () => usuarioLogado;
+// recuperar usuário da memória ou do storage
+export const getUsuarioLogado = async () => {
+  if (usuarioLogado) return usuarioLogado;
+  const saved = await AsyncStorage.getItem("usuario");
+  if (saved) {
+    usuarioLogado = JSON.parse(saved);
+    return usuarioLogado;
+  }
+  return null;
+};
 
-export const clearUsuarioLogado = () => {
+// recuperar só o hash
+export const getHash = async (): Promise<string | null> => {
+  const hash = await AsyncStorage.getItem("hash");
+  return hash;
+};
+
+// limpar sessão
+export const clearUsuarioLogado = async () => {
   usuarioLogado = null;
+  await AsyncStorage.removeItem("usuario");
+  await AsyncStorage.removeItem("hash");
 };

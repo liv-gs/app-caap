@@ -26,33 +26,60 @@ export type Usuario = {
   foto?: string;
   tipo: string;
   endereco?: Endereco;
+  dataNascimento?: string; 
+  hash: string;
+  [key: string]: any;
 };
 
 // 👉 Tipagem do contexto
-type AuthContextType = {
+interface AuthContextType {
   usuario: Usuario | null;
-  setUsuario: (user: Usuario | null) => void;
-};
+  setUsuario: (usuario: Usuario) => void;
+  clearUsuario: () => void;
+  loginAdvogado: (cpf: string, senha: string) => Promise<Usuario>;
+}
 
-// 👉 Criação do contexto
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 👉 Provider que vai envolver toda a aplicação
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [usuario, setUsuarioState] = useState<Usuario | null>(null);
+
+  const setUsuario = (usuario: Usuario) => {
+    setUsuarioState(usuario);
+  };
+
+  const clearUsuario = () => {
+    setUsuarioState(null);
+  };
+
+  const loginAdvogado = async (cpf: string, senha: string) => {
+    const data = await loginAdvogado(cpf, senha);
+
+    if (data.ok) {
+      const usuarioLogado: Usuario = {
+        ...data.usuario,
+        hash: data.usuario.hash,
+        idUsuarioLogado: data.usuario.idUsuarioLogado,
+      };
+      setUsuario(usuarioLogado);
+      return usuarioLogado;
+    } else {
+      throw new Error(data.erro || "Erro ao logar");
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ usuario, setUsuario }}>
+    <AuthContext.Provider value={{ usuario, setUsuario, clearUsuario, loginAdvogado }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-// 👉 Hook para usar o contexto em qualquer tela
-export function useAuth() {
+// Hook para consumir o contexto
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth deve ser usado dentro de AuthProvider");
+    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
   }
   return context;
-}
+};
