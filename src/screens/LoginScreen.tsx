@@ -35,7 +35,7 @@ const handleLogin = async () => {
     const data = await loginAdvogado(cpf, senha);
 
     if (data?.ok === "Usuario logado!") {
-      setUsuario(data.usuario);
+      setUsuario(data.usuario, data.token);
 
       navigation.reset({
         index: 0,

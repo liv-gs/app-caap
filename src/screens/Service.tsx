@@ -6,10 +6,11 @@ import {
   ScrollView,
   ActivityIndicator,
   TouchableOpacity,
+  Image,
 } from "react-native";
+import { SvgUri } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Feather } from "@expo/vector-icons";
 import type { MainStackParamList } from "../types/types";
 import { useAuth } from "../context/AuthContext";
 import { ApiService } from "../types/ApiService";
@@ -20,46 +21,37 @@ type CardNavigationProp = NativeStackNavigationProp<
   "Service"
 >;
 
-// 🔹 Mapeamento de ícones por título
-const iconMap: Record<string, keyof typeof Feather.glyphMap> = {
-  Auxílio: "heart",
-  Convênios: "briefcase",
-  Fisioterapia: "activity",
-  Odonto: "smile",
-  "Clube da Advocacia": "users",
-  "Hotel de Trânsito": "home",
-  "OAB Prev": "shield",
-  "Plano de Saúde": "heart",
-  "Pousada Praia dos Advogados": "umbrella",
-  "Salão de Beleza": "scissors",
-};
-
 type CardProps = ApiService;
 
 const Card = (service: CardProps) => {
   const navigation = useNavigation<CardNavigationProp>();
-
+  const isSvg = (url: string) => url.toLowerCase().endsWith(".svg");
   return (
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.8}
-      onPress={() =>
-        navigation.navigate("DadosService", {
-          service, // já passa o objeto normalizado inteiro
-        })
-      }
+      onPress={() => navigation.navigate("DadosService", { service })}
     >
       <View style={styles.row}>
-        <View style={styles.leftSection}>
-          <Feather
-            name={service.icon}
-            size={22}
-            color="#fff"
-            style={{ marginRight: 10 }}
-          />
+        {service.imagem_destacada && (
+          isSvg(service.imagem_destacada) ? (
+            <SvgUri
+              uri={service.imagem_destacada}
+              style={styles.iconImage}
+              width={36}
+              height={36}
+            />
+          ) : (
+            <Image
+              source={{ uri: service.imagem_destacada }}
+              style={styles.iconImage}
+              resizeMode="contain"
+            />
+          )
+        )}
+        <View style={styles.textContainer}>
           <Text style={styles.title}>{service.title}</Text>
         </View>
-        <Feather name="chevron-right" size={20} color="#fff" />
       </View>
       <Text style={styles.description}>{service.description}</Text>
     </TouchableOpacity>
@@ -68,35 +60,32 @@ const Card = (service: CardProps) => {
 
 export default function Service() {
   const { usuario } = useAuth();
-  const [services, setServices] = useState<ApiService[]>([]);
+  const [services, setServices] = useState<CardProps[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await fetch(
-          "https://sites-caapi.mpsip8.easypanel.host/wp-json/caapi/v1/servicos"
-        );
-        const data = await res.json();
+  const fetchServices = async () => {
+    try {
+      const res = await fetch(
+        "https://sites-caapi.mpsip8.easypanel.host/wp-json/caapi/v1/servicos"
+      );
+      const data = await res.json();
 
-        const mapped: ApiService[] = data.map((item: any) => {
-          const normalized = normalizeService(item);
-          return {
-            ...normalized,
-            icon: iconMap[item.titulo] || "briefcase", // ícone tratado aqui
-          };
-        });
+      const mapped: ApiService[] = data.map((item: any) =>
+        normalizeService(item, usuario)
+      );
 
-        setServices(mapped);
-      } catch (error) {
-        console.error("Erro ao buscar serviços:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setServices(mapped);
+    } catch (error) {
+      console.error("Erro ao buscar serviços:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchServices();
-  }, []);
+  fetchServices();
+}, []);
+
 
   if (loading) {
     return (
@@ -145,19 +134,24 @@ const styles = StyleSheet.create({
   card: {
     width: "90%",
     backgroundColor: "#0D3B66",
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 8,
+    
   },
-  leftSection: {
-    flexDirection: "row",
-    alignItems: "center",
+  textContainer: {
+    flex: 1,
+  },
+  iconImage: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    marginRight: 12,
   },
   title: {
     fontSize: 18,

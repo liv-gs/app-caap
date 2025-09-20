@@ -7,14 +7,14 @@ export type ApiService = {
   title: string; 
   description: string;
 
-  icon: keyof typeof Feather.glyphMap;
+  imagem_destacada?: string; // nome igual ao da API
   usuario: Usuario;
 
-  tipo: "hotel" | "salao" | "outro"; // mapeado conforme serviço
+  tipo: "hotel" | "salao" | "outro"; 
 
   horarios: string[]; 
   diaria: boolean; 
   dias: number[]; 
   link?: string;
-  content?: string | null
+  content?: string | null;
 };

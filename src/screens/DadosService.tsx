@@ -2,54 +2,89 @@ import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Image,
+  StyleSheet,
   TouchableOpacity,
   Linking,
+  useWindowDimensions,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { SvgUri } from "react-native-svg";
+import RenderHTML from "react-native-render-html";
 import type { MainStackParamList } from "../types/types";
 
 type RouteParams = RouteProp<MainStackParamList, "DadosService">;
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
 
+function parseHtmlContent(html: string) {
+  const regex = /<img.*?src="(.*?)".*?>/g;
+  const result: Array<{ type: "text" | "image"; content: string }> = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(html)) !== null) {
+    if (match.index > lastIndex) {
+      result.push({ type: "text", content: html.substring(lastIndex, match.index) });
+    }
+    result.push({ type: "image", content: match[1] });
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < html.length) {
+    result.push({ type: "text", content: html.substring(lastIndex) });
+  }
+
+  return result;
+}
+
 export default function DadosService() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteParams>();
   const { service } = route.params;
+  const { width } = useWindowDimensions();
 
   const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-  // Extrai TODAS as imagens do campo content
-  const regex = /<img.*?src="(.*?)"/g;
-  const matches = [...(service.content?.matchAll(regex) || [])];
-  const contentImages = matches.map((m) => m[1]);
+  const contentBlocks = parseHtmlContent(service.content || "");
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>{service.title}</Text>
 
-  
-        {/* Todas as imagens encontradas no content */}
-        {contentImages.map((img, idx) => (
-          <Image
-            key={idx}
-            source={{ uri: img }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-        ))}
-
-        <Text style={styles.description}>{service.description}</Text>
+        {/* Renderiza blocos de texto e imagens */}
+        {contentBlocks.map((block, idx) => {
+          if (block.type === "text") {
+            return (
+              <RenderHTML
+                key={idx}
+                contentWidth={width - 40}
+                source={{ html: block.content }}
+                tagsStyles={{
+                  p: { fontSize: 16, lineHeight: 24, marginBottom: 12, color: "#333" },
+                  h1: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
+                  h2: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
+                  h3: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
+                  li: { fontSize: 16, lineHeight: 24, color: "#444", marginBottom: 6 },
+                  strong: { fontWeight: "700" },
+                  em: { fontStyle: "italic" },
+                  a: { color: "#1D75CD", textDecorationLine: "underline" },
+                }}
+              />
+            );
+          } else {
+            return (
+              <Image
+                key={idx}
+                source={{ uri: block.content }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            );
+          }
+        })}
 
         {/* Dias da semana */}
         {service.dias?.length > 0 && (
@@ -71,77 +106,29 @@ export default function DadosService() {
 
         {/* Link */}
         {service.link && (
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => Linking.openURL(service.link)}
-          >
+          <TouchableOpacity style={styles.linkButton} onPress={() => Linking.openURL(service.link)}>
             <Text style={styles.linkText}>Abrir site</Text>
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("agendamento", { service })}
-        >
-          <View style={styles.buttonContent}>
-            <Text style={styles.buttonText}>Ir para Agendamento</Text>
-            <AntDesign
-              name="arrow-right"
-              size={20}
-              color="#fff"
-              style={{ marginLeft: 8 }}
-            />
-          </View>
-        </TouchableOpacity>
+        {/* Botão de Agendamento */}
+       
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff", paddingTop:100,},
+  safeArea: { flex: 1, backgroundColor: "#fff", paddingTop: 100 },
   scrollContent: { flexGrow: 1, padding: 20 },
-  image: {
-    width: "100%",
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#0D3B66",
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#333",
-    marginBottom: 20,
-  },
+  title: { fontSize: 22, fontWeight: "bold", color: "#0D3B66", marginBottom: 12 },
+  image: { width: "100%", height: 200, borderRadius: 16, marginVertical: 10 },
   infoBox: { marginBottom: 16 },
-  infoTitle: {
-    fontWeight: "600",
-    fontSize: 16,
-    color: "#0D3B66",
-    marginBottom: 4,
-  },
+  infoTitle: { fontWeight: "600", fontSize: 16, color: "#0D3B66", marginBottom: 4 },
   infoText: { fontSize: 15, color: "#555" },
-  linkButton: {
-    marginBottom: 20,
-    paddingVertical: 12,
-    backgroundColor: "#1D75CD",
-    borderRadius: 10,
-    alignItems: "center",
-  },
+  linkButton: { marginBottom: 20, paddingVertical: 12, backgroundColor: "#1D75CD", borderRadius: 10, alignItems: "center" },
   linkText: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  button: {
-    backgroundColor: "#0D3B66",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  button: { backgroundColor: "#0D3B66", paddingVertical: 14, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   buttonContent: { flexDirection: "row", alignItems: "center" },
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
