@@ -6,12 +6,14 @@ export type Endereco = {
   logradouro: string;
   numero: string;
   bairro: string;
-  municipio: string;
-  uf: string;
+  municipio: string;   // nome da cidade
+  cidade: string,
+  uf: string;          // sigla do estado
   cep: string;
   complemento?: string;
   enderecoCompleto: string;
   idMunicipio: number;
+  idUF?: number;       // aparece no retorno de enderecoGeoCode
 };
 
 // 👉 Tipagem do usuário
@@ -20,16 +22,24 @@ export type Usuario = {
   nomeLogado: string;
   email: string;
   cpf: string;
+  rg?: string;                 // usado no concluirCadastro
   celular: string;
   oab: string;
-  validadeCarteira: string;
-  foto?: string;
-  tipo: string;
+  validadeCarteira: string;    // "03/2025"
+  foto?: string;               // "img/sem-imagem.png"
+  tipo: "ADVOGADO" | "DEPENDENTE" | "CONVENIO";
   endereco?: Endereco;
-  dataNascimento?: string; 
+  dataNascimento?: string;     // "1990-01-01" ou "01/01/1990"
   hash: string;
+  validado?: number;           // 1 ou 0
+  primeiroAcesso?: number;     // 1 ou 0
+  titular?: Usuario | null;    // em alguns casos vem info do titular
+  colaborador?: number;        // 0 ou 1
+  senha?: string;              // só quando alterar
+  dependentes?: Usuario[];     // se quiser já mapear o retorno de listarDependentes
   [key: string]: any;
 };
+
 
 // 👉 Tipagem do contexto
 interface AuthContextType {

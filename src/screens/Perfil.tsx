@@ -2,20 +2,18 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import AppText from '../components/AppText';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { useAuth } from '../context/AuthContext';
 import { Usuario } from '../types/Usuario'; // 👈 importando o tipo
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+import { AuthStackParamList } from "../navigation/index"; // 👈 importa o tipo certo
 
-type RootStackParamList = {
-  EditarDados: undefined;
-  Dados: undefined;
-};
-
+type DadosScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, "Editar">;
 export default function Dados() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { usuario } = useAuth(); // 👈 pega os dados do contexto
 
+  const { usuario } = useAuth(); // 👈 pega os dados do contexto
+  const navigation = useNavigation<DadosScreenNavigationProp>();
   if (!usuario) {
     return (
       <View style={styles.loading}>
@@ -54,7 +52,7 @@ export default function Dados() {
       {/* Bloco maior */}
       <View style={styles.spacer} />
       <View style={styles.infoContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('EditarDados')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Editar')}>
           <Feather name="edit" size={24} color="#173C6B" style={styles.iconEditar}/>
         </TouchableOpacity>
 

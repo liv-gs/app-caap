@@ -8,6 +8,7 @@ import FormDados from "../screens/cadastro/DadosPessoais";
 import FotoCarteira from "../screens/cadastro/FotoCarteira";
 import FormEnd from "../screens/cadastro/FormEnd";
 import Validação from "../screens/cadastro/Validacao";
+import EditarDados from "../screens/Editar";
 import DrawerNavigator from "./DrawerNavigation";
 
 export type AuthStackParamList = {
@@ -25,6 +26,7 @@ export type AuthStackParamList = {
   CadastroValidacao: undefined;
 
   Home: undefined;
+  Editar: undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -44,9 +46,11 @@ export default function AuthStack() {
 
       {/* tela final */}
       <Stack.Screen name="CadastroValidacao" component={Validação} />
+      <Stack.Screen name="Editar" component={EditarDados} />
 
       {/* pós login */}
       <Stack.Screen name="Home" component={DrawerNavigator} />
+
     </Stack.Navigator>
   );
 }

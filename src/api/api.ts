@@ -87,3 +87,50 @@ export const clearUsuarioLogado = async () => {
   await AsyncStorage.removeItem("usuario");
   await AsyncStorage.removeItem("hash");
 };
+
+// ---------------- Função genérica de requisição autenticada ----------------
+
+const API_URL = "https://caapi.org.br/appcaapi/api/";
+
+/**
+ * Faz requisições para endpoints que exigem hash + idUsuarioLogado
+ * @param endpoint Nome do endpoint (ex: "infoCarteira")
+ * @param params Objeto com os parâmetros
+ * @param auth Se precisa de autenticação (default: true)
+ */
+export const apiRequest = async (
+  endpoint: string,
+  params: Record<string, any> = {},
+  auth: boolean = true
+) => {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+
+  if (auth) {
+    const usuario = await getUsuarioLogado();
+    const hash = await getHash();
+    if (!usuario || !hash) throw new Error("Sessão inválida");
+
+    headers["hash"] = hash;
+    headers["idUsuarioLogado"] = String(usuario.idUsuarioLogado);
+  }
+
+  const body = new URLSearchParams(params).toString();
+
+  const response = await fetch(API_URL + endpoint, {
+    method: "POST",
+    headers,
+    body,
+  });
+
+  if (!response.ok) throw new Error("Erro de conexão com servidor");
+  
+  const data = await response.json();
+
+  if (data?.erro) {
+    throw new Error(data.erro);
+  }
+
+  return data;
+}; 
