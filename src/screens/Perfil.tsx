@@ -2,18 +2,17 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import AppText from '../components/AppText';
-
 import { useAuth } from '../context/AuthContext';
-import { Usuario } from '../types/Usuario'; // 👈 importando o tipo
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
-import { AuthStackParamList } from "../navigation/index"; // 👈 importa o tipo certo
+import { AuthStackParamList } from "../navigation/index";
 
 type DadosScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, "Editar">;
-export default function Dados() {
 
-  const { usuario } = useAuth(); // 👈 pega os dados do contexto
+export default function Dados() {
+  const { usuario } = useAuth();
   const navigation = useNavigation<DadosScreenNavigationProp>();
+
   if (!usuario) {
     return (
       <View style={styles.loading}>
@@ -47,6 +46,14 @@ export default function Dados() {
           <AppText style={styles.label}>E-mail</AppText>
           <AppText style={styles.value}>{usuario.email}</AppText>
         </View>
+
+         <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Data de Nascimento</AppText>
+          <AppText style={styles.value}>{usuario.dataNascimento}</AppText>
+        </View>
+
+        
+
       </View>
 
       {/* Bloco maior */}
@@ -62,22 +69,41 @@ export default function Dados() {
         </View>
 
         <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Endereço</AppText>
+          <AppText style={styles.label}>Endereço Completo</AppText>
           <AppText style={styles.value}>
             {usuario.endereco?.enderecoCompleto ||
-              `${usuario.endereco?.logradouro}, ${usuario.endereco?.numero}, ${usuario.endereco?.bairro}`}
+              `${usuario.endereco?.logradouro || ''}, ${usuario.endereco?.numero || ''}, ${usuario.endereco?.bairro || ''}${usuario.endereco?.complemento ? ', ' + usuario.endereco.complemento : ''}`}
           </AppText>
         </View>
 
         <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Cidade</AppText>
-          <AppText style={styles.value}>{usuario.endereco?.municipio} - {usuario.endereco?.uf}</AppText>
+          <AppText style={styles.label}>Cidade / UF</AppText>
+          <AppText style={styles.value}>{usuario.endereco?.cidade || usuario.endereco?.municipio} - {usuario.endereco?.uf}</AppText>
         </View>
 
         <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Validade da Carteira</AppText>
-          <AppText style={styles.value}>{usuario.validadeCarteira}</AppText>
+          <AppText style={styles.label}>Bairro</AppText>
+          <AppText style={styles.value}>{usuario.endereco?.bairro}</AppText>
         </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Logradouro</AppText>
+          <AppText style={styles.value}>{usuario.endereco?.logradouro}</AppText>
+        </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Número</AppText>
+          <AppText style={styles.value}>{usuario.endereco?.numero}</AppText>
+        </View>
+
+        <View style={styles.infoBlock}>
+          <AppText style={styles.label}>Complemento</AppText>
+          <AppText style={styles.value}>{usuario.endereco?.complemento}</AppText>
+        </View>
+
+       
+
+       
       </View>
     </ScrollView>
   );
@@ -96,7 +122,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginBottom: 15,
     textAlign: 'center',
-    color: '#5a5f6aff',
+    color: '#173C6B',
   },
   carteira: {
     backgroundColor: '#fff',

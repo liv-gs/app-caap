@@ -136,7 +136,7 @@ export default function Carteirinha() {
           <View style={styles.dadosBaixo}>
             <AppText style={styles.dadoTexto}>Validade: {usuario.validadeCarteira}</AppText>
             <AppText style={styles.dadoTexto}>
-              Data de Nascimento: {formatarData(usuario.dataNascimento)}
+              Data de Nascimento: {usuario.dataNascimento}
             </AppText>
             <AppText style={styles.dadoTexto}>Inscrição: {usuario.oab}</AppText>
           </View>
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     marginBottom: 40,
     paddingTop: 20,
-    color: '#5a5f6aff',
+    color: '#173C6B',
   },
   carteirinha: {
     width: 360,

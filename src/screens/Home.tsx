@@ -13,15 +13,19 @@ import { useEffect, useState } from "react";
 import { useAuth } from '../context/AuthContext'; // ajuste o caminho
 import Entypo from '@expo/vector-icons/Entypo';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { Linking } from "react-native";
 
 // tipo para notícia
+
 type NewsType = {
   id: string;
   tag: string;
   tagColor: string;
   title: string;
   createdAt: string;
+  link: string;  // 👈 adiciona aqui
 };
+
 
 
 type TabsParamList = {
@@ -37,19 +41,24 @@ type NewsItemProps = {
   tag: string;
   tagColor: string;
   title: string;
+  link: string;   // 👈 novo
 };
 
-function NewsItem({ tag, tagColor, title }: NewsItemProps) {
+function NewsItem({ tag, tagColor, title, link }: NewsItemProps) {
   return (
-    <View style={styles.newsItem}>
-      <View style={styles.newsImagePlaceholder} />
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.newsTag, { color: tagColor }]}>{tag}</Text>
-        <Text style={styles.newsTitle}>{title}</Text>
-      </View>
-    </View>
+    <TouchableOpacity
+  style={styles.newsItem}
+  onPress={() => alert("Cliquei!")}
+>
+  <View style={{ flex: 1 }}>
+    <Text style={[styles.newsTag, { color: tagColor }]}>{tag}</Text>
+    <Text style={styles.newsTitle}>{title}</Text>
+  </View>
+</TouchableOpacity>
+
   );
 }
+
 
 
 
@@ -114,10 +123,11 @@ export default function Home() {
           // Mapeia os dados para o formato correto
           const mapped: NewsType[] = data.map(item => ({
             id: item.id.toString(),
-            tag: "COMUNICADO", // você pode ajustar a lógica para tags reais
-            tagColor: "#D4A017", // ajuste conforme a tag
+            tag: "COMUNICADO",
+            tagColor: "#D4A017",
             title: item.title.rendered,
-            createdAt: item.date, // para ordenação
+            createdAt: item.date,
+            link: item.link,   // 👈 pega do WordPress
           }));
 
           // Ordena por data decrescente (mais recente primeiro)
@@ -296,13 +306,14 @@ export default function Home() {
           <Text>Carregando notícias...</Text>
         ) : (
           news.map((item) => (
-            <NewsItem
-              key={item.id}       // key separada, não precisa passar como prop
-              tag={item.tag}
-              tagColor={item.tagColor}
-              title={item.title}  // já é string
-            />
-          ))
+          <NewsItem
+            key={item.id}
+            tag={item.tag}
+            tagColor={item.tagColor}
+            title={item.title}
+            link={item.link}   // 👈 agora cada notícia tem seu link real
+          />
+        ))
         )}
       </View>
 
