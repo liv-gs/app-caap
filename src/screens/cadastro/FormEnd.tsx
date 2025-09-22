@@ -19,6 +19,10 @@ import { AuthStackParamList } from "../../navigation/index";
 import FundoSvg from "../../../assets/images/FUNDO.svg";
 import LogoSvg  from "../../../assets/images/Camada_1.svg";
 import { readAsStringAsync, EncodingType } from "expo-file-system/legacy";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+
 // 🔹 Tipagem do Input
 type InputProps = {
   label: string;
@@ -61,6 +65,7 @@ const cidadesPorEstado: Record<string, string[]> = {
 };
 
 const FormEnd: React.FC = () => {
+const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   
   const route = useRoute<CadastroEnderecoRouteProp>();
@@ -106,64 +111,71 @@ const FormEnd: React.FC = () => {
   }, [cep, estado, cidade, bairro, logradouro, numero]);
 
   const onSubmit = async () => {
-    if (!canSubmit) {
-      Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
-      return;
-    }
+  if (!canSubmit) {
+    Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
+    return;
+  }
 
-    try {
-      const data = new FormData();
-      const frenteBase64 = carteira?.frente?.uri
-        ? await fileToBase64(carteira.frente.uri)
-        : null;
+  try {
+    const data = new FormData();
+    const frenteBase64 = carteira?.frente?.uri
+      ? await fileToBase64(carteira.frente.uri)
+      : null;
 
-      const versoBase64 = carteira?.verso?.uri
-        ? await fileToBase64(carteira.verso.uri)
-        : null;
+    const versoBase64 = carteira?.verso?.uri
+      ? await fileToBase64(carteira.verso.uri)
+      : null;
 
-      // 🔹 Dados pessoais
-      data.append("nome", dados.nome);
-      data.append("cpf", dados.cpf);
-      data.append("email", dados.email);
-      data.append("senha", dados.senha);
-      data.append("dataNascimento", formatDateForApi(dados.nascimento));
-      data.append("rg", dados.rg);
-      data.append("celular", dados.celular);
+    // 🔹 Dados pessoais
+    data.append("nome", dados.nome);
+    data.append("cpf", dados.cpf);
+    data.append("email", dados.email);
+    data.append("senha", dados.senha);
+    data.append("dataNascimento", formatDateForApi(dados.nascimento));
+    data.append("rg", dados.rg);
+    data.append("celular", dados.celular);
 
-      // 🔹 Dados da carteira
-      data.append("oab", carteira.oab);
-      data.append("oabFrente", frenteBase64 || "");
-      data.append("oabVerso", versoBase64 || "");
+    // 🔹 Dados da carteira
+    data.append("oab", carteira.oab);
+    data.append("oabFrente", frenteBase64 || "");
+    data.append("oabVerso", versoBase64 || "");
 
-      // 🔹 Endereço
-      data.append("cep", cep);
-      data.append("estado", estado || "");
-      data.append("cidade", cidade || "");
-      data.append("bairro", bairro);
-      data.append("logradouro", logradouro);
-      data.append("numero", numero);
-      data.append("complemento", complemento);
+    // 🔹 Endereço
+    data.append("cep", cep);
+    data.append("estado", estado || "");
+    data.append("cidade", cidade || "");
+    data.append("bairro", bairro);
+    data.append("logradouro", logradouro);
+    data.append("numero", numero);
+    data.append("complemento", complemento);
 
-      const headers = (data as any).getHeaders?.() ?? {
-        "Content-Type": "multipart/form-data",
-      };
+    const headers = (data as any).getHeaders?.() ?? {
+      "Content-Type": "multipart/form-data",
+    };
 
-      const response = await axios.post(
-        "https://caapi.org.br/appcaapi/api/concluirCadastro",
-        data,
-        { headers }
-      );
+    const response = await axios.post(
+      "https://caapi.org.br/appcaapi/api/concluirCadastro",
+      data,
+      { headers }
+    );
 
-      Alert.alert("Sucesso", "Cadastro concluído!");
-      console.log("Resposta API:", response.data);
-    } catch (error: any) {
-      console.error("Erro ao enviar cadastro:", error?.response?.data || error);
-      Alert.alert(
-        "Erro",
-        "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
-      );
-    }
-  };
+    console.log("Resposta API:", response.data);
+
+    Alert.alert("Sucesso", "Cadastro concluído!", [
+      {
+        text: "OK",
+        onPress: () => navigation.replace("CadastroValidacao"),
+      },
+    ]);
+  } catch (error: any) {
+    console.error("Erro ao enviar cadastro:", error?.response?.data || error);
+    Alert.alert(
+      "Erro",
+      "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
+    );
+  }
+};
+
 
  return (
   <KeyboardAvoidingView

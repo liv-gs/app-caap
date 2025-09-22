@@ -3,7 +3,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Feather, SimpleLineIcons } from '@expo/vector-icons';
+import { Feather, SimpleLineIcons, MaterialIcons } from '@expo/vector-icons';
 import { getFocusedRouteNameFromRoute, RouteProp } from '@react-navigation/native';
 import TabsNavigator from './TabsNavigation';
 
@@ -13,6 +13,7 @@ import DadosConvenio from '../screens/DadosConvenio';
 import Calendar from '../screens/agendamento';
 import DadosService from '../screens/DadosService';
 import Home from '../screens/Home';
+import AlterarSenha from '../screens/AlterarSenha'; // <-- IMPORTANTE
 
 import LogoSvg from '../../assets/images/Camada_1.svg';
 import HeaderBg from '../../assets/images/FUNDO.svg';
@@ -95,13 +96,24 @@ export default function DrawerNavigator() {
         }}
       />
 
+      {/* Alterar senha */}
+      <Drawer.Screen
+        name="#"
+        component={AlterarSenha}
+        options={{
+          drawerLabel: "Alterar Senha",
+          headerShown: false,
+          drawerIcon: ({ color, size }) => <MaterialIcons name="lock-reset" color={color} size={size} />
+        }}
+      />
+
       {/* Voltar para Login */}
       <Drawer.Screen
         name="LoginScreen"
         component={LoginScreen}
         options={{
           title: '',
-          drawerLabel: 'Voltar para Login',
+          drawerLabel: 'Sair',
           headerShown: false,
           drawerIcon: ({ color, size }) => <SimpleLineIcons name="logout" color={color} size={size} />,
         }}

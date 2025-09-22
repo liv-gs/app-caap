@@ -9,6 +9,7 @@ import FotoCarteira from "../screens/cadastro/FotoCarteira";
 import FormEnd from "../screens/cadastro/FormEnd";
 import Validação from "../screens/cadastro/Validacao";
 import EditarDados from "../screens/Editar";
+import RecuperarSenha from "../screens/recuperarSenha";
 import DrawerNavigator from "./DrawerNavigation";
 
 export type AuthStackParamList = {
@@ -27,6 +28,7 @@ export type AuthStackParamList = {
 
   Home: undefined;
   Editar: undefined;
+  RecuperarSenha: undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -35,6 +37,7 @@ export default function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="RecuperarSenha" component={RecuperarSenha} />
       <Stack.Screen name="EscolhaTipo" component={EscolhaTipoScreen} />
 
       {/* comum */}

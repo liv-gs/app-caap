@@ -18,6 +18,27 @@ import { getHash, getUsuarioLogado } from "../api/api";
 
 const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
 
+
+// Para exibir no input (dd/mm/aaaa)
+const formatDateInput = (text: string) => {
+  let cleaned = text.replace(/\D/g, '');
+  cleaned = cleaned.substring(0, 8);
+  if (cleaned.length >= 5) return `${cleaned.substring(0,2)}/${cleaned.substring(2,4)}/${cleaned.substring(4)}`;
+  if (cleaned.length >= 3) return `${cleaned.substring(0,2)}/${cleaned.substring(2)}`;
+  return cleaned;
+};
+
+// Para enviar para API (aaaa-mm-dd)
+const formatDateForApi = (text: string) => {
+  const parts = text.split("/");
+  if (parts.length === 3) {
+    const [dia, mes, ano] = parts;
+    return `${ano}-${mes}-${dia}`;
+  }
+  return text; // se não estiver no formato esperado, devolve como está
+};
+
+
 export default function EditarDados() {
   const { usuario, setUsuario } = useAuth();
 

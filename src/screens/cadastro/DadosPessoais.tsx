@@ -197,19 +197,21 @@ const onSubmit = async () => {
         { headers }
       );
 
-      if (response.status === 200 && response.data?.sucesso) {
-        Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
+     if (response.status === 200) {
+        Alert.alert("Sucesso", "Cadastro concluído!");
         navigation.navigate("CadastroValidacao");
-      } else {
-        Alert.alert("Atenção", "Houve um problema ao concluir o cadastro.");
-        console.log("Resposta inesperada:", response.data);
       }
     }
   } catch (err: any) {
-    console.error("Erro ao enviar cadastro:", err?.response?.data || err);
+    console.error("=== Erro ao enviar cadastro ===");
+    console.error("Mensagem:", err.message);
+    console.error("Response data:", err.response?.data);
+    console.error("Status:", err.response?.status);
+    console.error("Headers:", err.response?.headers);
+
     Alert.alert(
       "Erro",
-      "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
+      err.response?.data?.erro || "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
     );
   }
 };

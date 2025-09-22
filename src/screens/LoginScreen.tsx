@@ -42,7 +42,7 @@ const handleLogin = async () => {
         routes: [{ name: "Home" }],
       });
     } else {
-      setError("CPF ou OAB inválidos.");
+      setError("CPF ou Senha inválidos.");
     }
   } catch (err) {
     setError("Erro ao conectar com o servidor.");
@@ -95,7 +95,7 @@ const handleLogin = async () => {
 
           {/* Senha (Número OAB) */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Número OAB</Text>
+            <Text style={styles.label}>Senha</Text>
             <TextInput
               style={styles.input}
               value={senha}
@@ -118,6 +118,11 @@ const handleLogin = async () => {
           <TouchableOpacity onPress={() => navigation.navigate("EscolhaTipo")}>
             <Text style={styles.link}>
               Não tem conta? Cadastre-se aqui
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("RecuperarSenha")}>
+            <Text style={styles.link}>
+              Esqueceu sua senha?
             </Text>
           </TouchableOpacity>
         </FormContainer>
@@ -205,6 +210,7 @@ const styles = StyleSheet.create({
   link: {
     color: "#1E40AF",
     textAlign: "center",
+    padding:10,
   },
   footer: {
     position: "absolute",
