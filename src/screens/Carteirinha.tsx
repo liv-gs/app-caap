@@ -33,10 +33,16 @@ export default function Carteirinha() {
   }, []);
 
   function formatarData(data?: string) {
-    if (!data) return "Não informado";
-    const [ano, mes, dia] = data.split("-");
-    return `${dia}/${mes}/${ano}`;
-  }
+  if (!data) return "Não informado";
+
+  // Se já vier no formato brasileiro, retorna direto
+  if (data.includes("/")) return data;
+
+  // Se vier no formato YYYY-MM-DD → transforma em DD/MM/YYYY
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
 
   const tirarFoto = async () => {
     const result = await ImagePicker.launchCameraAsync({

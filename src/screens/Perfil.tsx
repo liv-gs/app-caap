@@ -9,6 +9,18 @@ import { AuthStackParamList } from "../navigation/index";
 
 type DadosScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, "Editar">;
 
+function formatarData(data?: string) {
+  if (!data) return "Não informado";
+
+  // Se já vier no formato brasileiro, retorna direto
+  if (data.includes("/")) return data;
+
+  // Se vier no formato YYYY-MM-DD → transforma em DD/MM/YYYY
+  const [ano, mes, dia] = data.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
+
+
 export default function Dados() {
   const { usuario } = useAuth();
   const navigation = useNavigation<DadosScreenNavigationProp>();
@@ -49,7 +61,9 @@ export default function Dados() {
 
          <View style={styles.infoBlock}>
           <AppText style={styles.label}>Data de Nascimento</AppText>
-          <AppText style={styles.value}>{usuario.dataNascimento}</AppText>
+          <AppText style={styles.value}>
+             Data de Nascimento: {formatarData(usuario.dataNascimento)}
+          </AppText>
         </View>
 
         

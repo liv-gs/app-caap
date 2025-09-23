@@ -158,7 +158,7 @@ const onSubmit = async () => {
     data.append("cpf", onlyDigits(cpf));
     data.append("email", email);
     data.append("senha", senha);
-    data.append("dataNascimento", formatDateForApi(nascimento));
+    data.append("dataNascimento",nascimento);
     data.append("rg", rg);
     data.append("celular", celular);
 
@@ -197,21 +197,19 @@ const onSubmit = async () => {
         { headers }
       );
 
-     if (response.status === 200) {
-        Alert.alert("Sucesso", "Cadastro concluído!");
+      if (response.status === 200 && response.data?.sucesso) {
+        Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
         navigation.navigate("CadastroValidacao");
+      } else {
+        Alert.alert("Atenção", "Houve um problema ao concluir o cadastro.");
+        console.log("Resposta inesperada:", response.data);
       }
     }
   } catch (err: any) {
-    console.error("=== Erro ao enviar cadastro ===");
-    console.error("Mensagem:", err.message);
-    console.error("Response data:", err.response?.data);
-    console.error("Status:", err.response?.status);
-    console.error("Headers:", err.response?.headers);
-
+    console.error("Erro ao enviar cadastro:", err?.response?.data || err);
     Alert.alert(
       "Erro",
-      err.response?.data?.erro || "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
+      "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
     );
   }
 };

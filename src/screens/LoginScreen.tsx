@@ -33,6 +33,8 @@ export default function LoginScreen() {
 const handleLogin = async () => {
   try {
     const data = await loginAdvogado(cpf, senha);
+    console.log("🔹 Dados retornados da API:", data);
+    console.log("🔹 Usuario retornado:", data?.usuario);
 
     if (data?.ok === "Usuario logado!") {
       setUsuario(data.usuario,);
