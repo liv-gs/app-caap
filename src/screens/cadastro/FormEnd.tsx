@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,14 +11,16 @@ import {
   Alert,
   KeyboardTypeOptions,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { useRoute } from "@react-navigation/native";
 import { RouteProp } from "@react-navigation/native";
 import axios from "axios";
 import FormData from "form-data";
 import { AuthStackParamList } from "../../navigation/index";
 import FundoSvg from "../../../assets/images/FUNDO.svg";
-import LogoSvg  from "../../../assets/images/Camada_1.svg";
+import LogoSvg from "../../../assets/images/Camada_1.svg";
 import { readAsStringAsync, EncodingType } from "expo-file-system/legacy";
+
 // 🔹 Tipagem do Input
 type InputProps = {
   label: string;
@@ -27,7 +29,6 @@ type InputProps = {
   onChangeText: (t: string) => void;
   keyboardType?: KeyboardTypeOptions;
 };
-
 
 // 🔹 Tipagem da rota
 type CadastroEnderecoRouteProp = RouteProp<
@@ -51,49 +52,52 @@ const maskCEP = (v: string) => {
   return d.length > 5 ? d.slice(0, 5) + "-" + d.slice(5) : d;
 };
 
-// Dados fixos para exemplo
-const estados = ["PI", "MA", "CE", "BA"];
-const cidadesPorEstado: Record<string, string[]> = {
-  PI: ["Teresina", "Parnaíba", "Picos"],
-  MA: ["São Luís", "Imperatriz"],
-  CE: ["Fortaleza", "Juazeiro do Norte"],
-  BA: ["Salvador", "Feira de Santana"],
-};
-
 const FormEnd: React.FC = () => {
-
-  
   const route = useRoute<CadastroEnderecoRouteProp>();
   const { dados, carteira } = route.params;
 
-
-
- console.log("========================================");
-  console.log("📥 RECEBIDO NA TELA DE ENDEREÇO");
-  console.log("➡️ Dados Pessoais:", dados);
-  console.log("➡️ Dados Carteira:", {
-    oab: carteira?.oab,
-    frente: carteira?.frente?.uri || "❌ não recebida",
-    verso: carteira?.verso?.uri || "❌ não recebida",
-  });
-  console.log("========================================");
-
-
-  // Estados locais
   const [cep, setCep] = useState("");
   const [estado, setEstado] = useState<string | null>(null);
-  const [cidade, setCidade] = useState<string | null>(null);
+  const [cidade, setCidade] = useState<number | null>(null); // id da cidade
   const [bairro, setBairro] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [numero, setNumero] = useState("");
   const [complemento, setComplemento] = useState("");
+  const [ufs, setUfs] = useState<{ id: string; nome: string; sigla: string }[]>([]);
+  const [cidades, setCidades] = useState<{ id: string; nome: string }[]>([]);
 
-const formatDateForApi = (date: string) => {
-  // Retorna exatamente como veio
-  return date; // "14/01/2005"
-};
+  const formatDateForApi = (date: string) => date;
 
-  // Validação do botão
+  // 🔹 Buscar estados
+  useEffect(() => {
+    const fetchUfs = async () => {
+      try {
+        const res = await axios.post("https://caapi.org.br/appcaapi/api/listarUfs", {});
+        setUfs(res.data.ufs);
+      } catch (err) {
+        console.error("Erro ao carregar UFs:", err);
+        Alert.alert("Erro", "Não foi possível carregar a lista de estados.");
+      }
+    };
+    fetchUfs();
+  }, []);
+
+  // 🔹 Buscar cidades quando mudar estado
+  useEffect(() => {
+    if (!estado) return;
+    const fetchCidades = async () => {
+      try {
+        const res = await axios.post("https://caapi.org.br/appcaapi/api/listarCidades", { uf: estado });
+        setCidades(res.data.cidades);
+      } catch (err) {
+        console.error("Erro ao carregar cidades:", err);
+        Alert.alert("Erro", "Não foi possível carregar a lista de cidades.");
+      }
+    };
+    fetchCidades();
+    setCidade(null); // reseta cidade ao mudar o estado
+  }, [estado]);
+
   const canSubmit = useMemo(() => {
     return (
       cep.length === 9 &&
@@ -116,12 +120,11 @@ const formatDateForApi = (date: string) => {
       const frenteBase64 = carteira?.frente?.uri
         ? await fileToBase64(carteira.frente.uri)
         : null;
-
       const versoBase64 = carteira?.verso?.uri
         ? await fileToBase64(carteira.verso.uri)
         : null;
 
-      // 🔹 Dados pessoais
+      // Dados pessoais
       data.append("nome", dados.nome);
       data.append("cpf", dados.cpf);
       data.append("email", dados.email);
@@ -130,15 +133,15 @@ const formatDateForApi = (date: string) => {
       data.append("rg", dados.rg);
       data.append("celular", dados.celular);
 
-      // 🔹 Dados da carteira
+      // Carteira
       data.append("oab", carteira.oab);
       data.append("oabFrente", frenteBase64 || "");
       data.append("oabVerso", versoBase64 || "");
 
-      // 🔹 Endereço
+      // Endereço
       data.append("cep", cep);
       data.append("estado", estado || "");
-      data.append("cidade", cidade || "");
+      data.append("cidade", cidade?.toString() || "");
       data.append("bairro", bairro);
       data.append("logradouro", logradouro);
       data.append("numero", numero);
@@ -165,88 +168,81 @@ const formatDateForApi = (date: string) => {
     }
   };
 
- return (
-  <KeyboardAvoidingView
-    style={{ flex: 1, backgroundColor: "#ffffff" }}
-    behavior={Platform.select({ ios: "padding", android: undefined })}
-  >
-
-        <View style={styles.fundoWrapper} pointerEvents="none">
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "#ffffff" }}
+      behavior={Platform.select({ ios: "padding", android: undefined })}
+    >
+      <View style={styles.fundoWrapper} pointerEvents="none">
         <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
       </View>
 
-        <View style={styles.logoWrapper}>
-      <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
-    </View>
-
-    {/* 🔹 Wrapper para centralizar */}
-    <View style={styles.containerWrapper}>
-      {/* 🔹 Caixa do formulário com altura controlada */}
-      <View style={styles.formBox}>
-        <Text style={styles.headerTitle}>Endereço</Text>
-
-        {/* 🔹 Scroll interno só para os campos */}
-        <ScrollView
-          style={styles.formScroll}
-          contentContainerStyle={{ paddingBottom: 24 }}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          <LabeledInput
-            label="CEP*"
-            placeholder="00000-000"
-            value={cep}
-            onChangeText={(t) => setCep(maskCEP(t))}
-            keyboardType="numeric"
-          />
-          <LabeledInput
-            label="Estado*"
-            placeholder="Digite o estado"
-            value={estado ?? ""}
-            onChangeText={(t) => {
-              setEstado(t);
-              setCidade(null);
-            }}
-          />
-          <LabeledInput
-            label="Cidade*"
-            placeholder="Digite a cidade"
-            value={cidade ?? ""}
-            onChangeText={setCidade}
-          />
-          <LabeledInput label="Bairro*" value={bairro} onChangeText={setBairro} />
-          <LabeledInput
-            label="Logradouro*"
-            value={logradouro}
-            onChangeText={setLogradouro}
-          />
-          <LabeledInput
-            label="Número*"
-            value={numero}
-            onChangeText={setNumero}
-            keyboardType="numeric"
-          />
-          <LabeledInput
-            label="Complemento"
-            value={complemento}
-            onChangeText={setComplemento}
-          />
-        </ScrollView>
-
-        {/* 🔹 Botão fixo dentro do container */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={onSubmit}
-          disabled={!canSubmit}
-          style={[styles.button, !canSubmit && styles.buttonDisabled]}
-        >
-          <Text style={styles.buttonText}>Concluir</Text>
-        </TouchableOpacity>
+      <View style={styles.logoWrapper}>
+        <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
       </View>
-    </View>
-  </KeyboardAvoidingView>
-);
 
+      <View style={styles.containerWrapper}>
+        <View style={styles.formBox}>
+          <Text style={styles.headerTitle}>Endereço</Text>
+
+          <ScrollView
+            style={styles.formScroll}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <LabeledInput
+              label="CEP*"
+              placeholder="00000-000"
+              value={cep}
+              onChangeText={(t) => setCep(maskCEP(t))}
+              keyboardType="numeric"
+            />
+
+            <Text style={styles.label}>Estado*</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={estado}
+                onValueChange={(value) => setEstado(value)}
+              >
+                <Picker.Item label="Selecione o estado" value={null} />
+                {ufs.map((u) => (
+                  <Picker.Item key={u.id} label={u.nome} value={u.sigla} />
+                ))}
+              </Picker>
+            </View>
+
+            <Text style={styles.label}>Cidade*</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={cidade}
+                onValueChange={(value) => setCidade(value)}
+              >
+                <Picker.Item label="Selecione a cidade" value={null} />
+                {cidades.map((c) => (
+                  <Picker.Item key={c.id} label={c.nome} value={c.id} />
+                ))}
+              </Picker>
+            </View>
+
+            <LabeledInput label="Bairro*" value={bairro} onChangeText={setBairro} />
+            <LabeledInput label="Logradouro*" value={logradouro} onChangeText={setLogradouro} />
+            <LabeledInput label="Número*" value={numero} onChangeText={setNumero} keyboardType="numeric" />
+            <LabeledInput label="Complemento" value={complemento} onChangeText={setComplemento} />
+          </ScrollView>
+
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={onSubmit}
+            disabled={!canSubmit}
+            style={[styles.button, !canSubmit && styles.buttonDisabled]}
+          >
+            <Text style={styles.buttonText}>Concluir</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
+  );
 };
 
 // 🔹 Componente de input tipado
@@ -272,16 +268,12 @@ const LabeledInput: React.FC<InputProps> = ({
   </View>
 );
 
-// 🔹 estilos
+// 🔹 estilos (mantidos do seu original)
 const styles = StyleSheet.create({
-  containerWrapper: {
-    flex: 1,
-    alignItems: "center", // centraliza horizontalmente
-    paddingHorizontal: 16,
-  },
+  containerWrapper: { flex: 1, alignItems: "center", paddingHorizontal: 16 },
   formBox: {
     width: "100%",
-    maxHeight: "85%", // 🔹 controla a altura para não colar no rodapé
+    maxHeight: "85%",
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,
@@ -293,22 +285,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  formScroll: {
-    flexGrow: 0,
-    marginBottom: 12, // espaço para o botão não sobrepor os campos
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 6,
-    color: "#222",
-    fontWeight: "500",
-  },
+  headerTitle: { fontSize: 22, fontWeight: "700", marginBottom: 16, textAlign: "center" },
+  formScroll: { flexGrow: 0, marginBottom: 12 },
+  label: { fontSize: 16, marginBottom: 6, color: "#222", fontWeight: "500" },
   inputWrapper: {
     backgroundColor: "#fff",
     borderRadius: 24,
@@ -324,47 +303,13 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginBottom: 8,
   },
-  input: {
-    fontSize: 16,
-    color: "#111",
-  },
-  button: {
-    backgroundColor: "#2563EB",
-    height: 54,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
-  },
-  buttonDisabled: {
-    backgroundColor: "#93C5FD",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  logoWrapper: {
-  alignItems: "center",
-  marginTop: 40,  // distância do topo da tela
-},
-
-  logo: {
-    width: 120, // largura da logo
-    height: 80, // altura da logo
-  },
-    fundoWrapper: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
+  input: { fontSize: 16, color: "#111" },
+  pickerWrapper: { backgroundColor: "#fff", borderRadius: 24, borderWidth: 1, borderColor: "#EFEFEF", marginBottom: 16, overflow: "hidden" },
+  button: { backgroundColor: "#2563EB", height: 54, borderRadius: 28, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 3 },
+  buttonDisabled: { backgroundColor: "#93C5FD" },
+  buttonText: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  logoWrapper: { alignItems: "center", marginTop: 40 },
+  fundoWrapper: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
 });
-
 
 export default FormEnd;

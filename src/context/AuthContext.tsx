@@ -6,7 +6,7 @@ export type Endereco = {
   logradouro: string;
   numero: string;
   bairro: string;
-  municipio: string; // nome da cidade
+  estado: string; // nome da cidade
   cidade: string;
   uf: string;        // sigla do estado
   cep: string;

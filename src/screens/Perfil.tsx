@@ -61,8 +61,7 @@ export default function Dados() {
 
          <View style={styles.infoBlock}>
           <AppText style={styles.label}>Data de Nascimento</AppText>
-          <AppText style={styles.value}>
-             Data de Nascimento: {formatarData(usuario.dataNascimento)}
+          <AppText style={styles.value}>{formatarData(usuario.dataNascimento)}
           </AppText>
         </View>
 
