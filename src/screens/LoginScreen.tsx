@@ -33,20 +33,28 @@ export default function LoginScreen() {
 const handleLogin = async () => {
   try {
     const data = await loginAdvogado(cpf, senha);
-    console.log("🔹 Dados retornados da API:", data);
-    console.log("🔹 Usuario retornado:", data?.usuario);
-    console.log("🔹 Endereço:", data?.usuario?.endereco);
 
+    if (!data?.usuario) {
+      setError("CPF ou Senha inválidos.");
+      return;
+    }
 
-    if (data?.ok === "Usuario logado!") {
-      setUsuario(data.usuario,);
+    // Salva no contexto
+    setUsuario(data.usuario);
 
+    // Verifica se o usuário foi validado
+    if (data.usuario.validado === 0) {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "CadastroValidacao" }],
+      });
+    } else if (data.usuario.validado === 1) {
       navigation.reset({
         index: 0,
         routes: [{ name: "Home" }],
       });
     } else {
-      setError("CPF ou Senha inválidos.");
+      setError("Status do usuário desconhecido.");
     }
   } catch (err) {
     setError("Erro ao conectar com o servidor.");
@@ -54,6 +62,8 @@ const handleLogin = async () => {
     setLoading(false);
   }
 };
+
+
 
 
   return (
