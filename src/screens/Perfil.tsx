@@ -89,32 +89,33 @@ export default function Dados() {
           </AppText>
         </View>
 
-        <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Cidade / UF</AppText>
-          <AppText style={styles.value}>{usuario.endereco?.cidade || usuario.endereco?.municipio} - {usuario.endereco?.uf}</AppText>
-        </View>
+      <View style={styles.infoBlock}>
+        <AppText style={styles.label}>Cidade / UF</AppText>
+        <AppText style={styles.value}>
+          {usuario.endereco?.municipio} - {usuario.endereco?.uf}
+        </AppText>
+      </View>
 
-        <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Bairro</AppText>
-          <AppText style={styles.value}>{usuario.endereco?.bairro}</AppText>
-        </View>
+      <View style={styles.infoBlock}>
+        <AppText style={styles.label}>Bairro</AppText>
+        <AppText style={styles.value}>{usuario.endereco?.bairro}</AppText>
+      </View>
 
-        <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Logradouro</AppText>
-          <AppText style={styles.value}>{usuario.endereco?.logradouro}</AppText>
-        </View>
+      <View style={styles.infoBlock}>
+        <AppText style={styles.label}>Logradouro</AppText>
+        <AppText style={styles.value}>{usuario.endereco?.logradouro}</AppText>
+      </View>
 
-        <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Número</AppText>
-          <AppText style={styles.value}>{usuario.endereco?.numero}</AppText>
-        </View>
+      <View style={styles.infoBlock}>
+        <AppText style={styles.label}>Número</AppText>
+        <AppText style={styles.value}>{usuario.endereco?.numero}</AppText>
+      </View>
 
-        <View style={styles.infoBlock}>
-          <AppText style={styles.label}>Complemento</AppText>
-          <AppText style={styles.value}>{usuario.endereco?.complemento}</AppText>
-        </View>
+      <View style={styles.infoBlock}>
+        <AppText style={styles.label}>Complemento</AppText>
+        <AppText style={styles.value}>{usuario.endereco?.complemento}</AppText>
+      </View>
 
-       
 
        
       </View>

@@ -92,19 +92,13 @@ export const clearUsuarioLogado = async () => {
 
 const API_URL = "https://caapi.org.br/appcaapi/api/";
 
-/**
- * Faz requisições para endpoints que exigem hash + idUsuarioLogado
- * @param endpoint Nome do endpoint (ex: "infoCarteira")
- * @param params Objeto com os parâmetros
- * @param auth Se precisa de autenticação (default: true)
- */
 export const apiRequest = async (
   endpoint: string,
   params: Record<string, any> = {},
   auth: boolean = true
 ) => {
   const headers: Record<string, string> = {
-    "Content-Type": "application/x-www-form-urlencoded",
+    "Content-Type": "application/json", // ⚡ Agora enviamos JSON
   };
 
   if (auth) {
@@ -116,21 +110,28 @@ export const apiRequest = async (
     headers["idUsuarioLogado"] = String(usuario.idUsuarioLogado);
   }
 
-  const body = new URLSearchParams(params).toString();
+  console.log("📤 Enviando requisição para:", API_URL + endpoint);
+  console.log("📤 Cabeçalhos:", headers);
+  console.log("📤 Parâmetros:", params);
 
   const response = await fetch(API_URL + endpoint, {
     method: "POST",
     headers,
-    body,
+    body: JSON.stringify(params), // ⚡ Envio em JSON
   });
 
-  if (!response.ok) throw new Error("Erro de conexão com servidor");
-  
-  const data = await response.json();
+  console.log("📥 Resposta HTTP:", response.status, response.statusText);
 
-  if (data?.erro) {
-    throw new Error(data.erro);
+  if (!response.ok) {
+    const text = await response.text();
+    console.error("❌ Erro do servidor:", text);
+    throw new Error("Erro de conexão com servidor");
   }
 
+  const data = await response.json();
+  console.log("📥 Dados retornados:", data);
+
+  if (data?.erro) throw new Error(data.erro);
+
   return data;
-}; 
+};

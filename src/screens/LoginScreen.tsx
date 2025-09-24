@@ -35,6 +35,8 @@ const handleLogin = async () => {
     const data = await loginAdvogado(cpf, senha);
     console.log("🔹 Dados retornados da API:", data);
     console.log("🔹 Usuario retornado:", data?.usuario);
+    console.log("🔹 Endereço:", data?.usuario?.endereco);
+
 
     if (data?.ok === "Usuario logado!") {
       setUsuario(data.usuario,);

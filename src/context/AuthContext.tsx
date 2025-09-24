@@ -1,4 +1,6 @@
+// src/context/AuthContext.tsx
 import React, { createContext, useState, ReactNode, useContext } from "react";
+import { loginAdvogado as apiLoginAdvogado, setUsuarioLogado } from "../api/api";
 
 // 👉 Tipagem do endereço
 export type Endereco = {
@@ -6,8 +8,7 @@ export type Endereco = {
   logradouro: string;
   numero: string;
   bairro: string;
-  estado: string; // nome da cidade
-  cidade: string;
+  municipio: string; // nome da cidade
   uf: string;        // sigla do estado
   cep: string;
   complemento?: string;
@@ -36,6 +37,14 @@ export type Usuario = {
   colaborador?: number;
   senha?: string;
   dependentes?: Usuario[];
+  cep?: string;
+  cidade?: string;
+  bairro?: string;
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  enderecoCompleto?: string;
+  uf?: string;
   [key: string]: any;
 };
 
@@ -49,6 +58,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Função para padronizar dados do usuário
+const padronizarUsuario = (usuario: any): Usuario => {
+  return {
+    ...usuario,
+    cep: usuario.endereco?.cep || "",
+    cidade: usuario.endereco?.municipio || "",
+    bairro: usuario.endereco?.bairro || "",
+    logradouro: usuario.endereco?.logradouro || "",
+    numero: usuario.endereco?.numero || "",
+    complemento: usuario.endereco?.complemento || "",
+    enderecoCompleto: usuario.endereco?.enderecoCompleto || "",
+    uf: usuario.endereco?.uf || "",
+  };
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [usuario, setUsuarioState] = useState<Usuario | null>(null);
 
@@ -61,15 +85,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const loginAdvogado = async (cpf: string, senha: string) => {
-    const data = await loginAdvogado(cpf, senha);
+    const data = await apiLoginAdvogado(cpf, senha);
 
-    if (data.ok) {
-      const usuarioLogado: Usuario = {
-        ...data.usuario,
-        hash: data.usuario.hash,
-        idUsuarioLogado: data.usuario.idUsuarioLogado,
-      };
+    if (data?.usuario) {
+      const usuarioLogado = padronizarUsuario(data.usuario);
       setUsuario(usuarioLogado);
+      await setUsuarioLogado(usuarioLogado);
       return usuarioLogado;
     } else {
       throw new Error(data.erro || "Erro ao logar");
