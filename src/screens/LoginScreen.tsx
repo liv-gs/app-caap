@@ -33,7 +33,9 @@ export default function LoginScreen() {
 const handleLogin = async () => {
   try {
     const data = await loginAdvogado(cpf, senha);
-
+ console.log("🔹 Dados retornados da API:", data);
+    console.log("🔹 Usuario retornado:", data?.usuario);
+    console.log("🔹 Endereço:", data?.usuario?.endereco);
     if (!data?.usuario) {
       setError("CPF ou Senha inválidos.");
       return;
