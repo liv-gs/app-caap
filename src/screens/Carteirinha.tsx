@@ -140,12 +140,14 @@ export default function Carteirinha() {
 
           {/* Dados abaixo do nome */}
           <View style={styles.dadosBaixo}>
-            <AppText style={styles.dadoTexto}>Validade: {usuario.validadeCarteira}</AppText>
-           <AppText style={styles.dadoTexto}>
+             <AppText style={styles.dadoTexto}>
               Data de Nascimento: {formatarData(usuario.dataNascimento)}
             </AppText>
+             <AppText style={styles.dadoTexto}>Inscrição: {usuario.oab}</AppText>
 
-            <AppText style={styles.dadoTexto}>Inscrição: {usuario.oab}</AppText>
+            <AppText style={styles.dadoTexto}>Validade: {usuario.validadeCarteira}</AppText>
+          
+  
           </View>
         </View>
       </ImageBackground>
@@ -170,7 +172,7 @@ const styles = StyleSheet.create({
   },
   carteirinha: {
     width: 360,
-    height: 280,
+    height: 260,
     backgroundColor: '#fff',
     borderColor: '#ccc',
     borderWidth: 1,

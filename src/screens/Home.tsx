@@ -216,69 +216,7 @@ export default function Home() {
       </TouchableOpacity>
     </View>
 
-      
-  <Text style={styles.sectionTitle}>Serviços</Text>
-<View style={styles.serviceItem}>
-  <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#fedbf8ff" }]}>
-  
-      <Entypo name="scissors" size={18} color="#8a1e68ff" />
-
-    </View>
-    <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}>Salão de Beleza</Text>
-    </View>
-    <TouchableOpacity>
-      <Text style={styles.serviceAction}>Agendar</Text>
-    </TouchableOpacity>
-  </View>
-</View>
-<View style={styles.serviceItem}>
-  <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#dce9fcff" }]}>
-    
-     <FontAwesome6 name="umbrella-beach" size={18} color="#163ea3ff" />
-    </View>
-    <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}>Pousada Praia dos Advogados</Text>
-    </View>
-    <TouchableOpacity>
-      <Text style={styles.serviceAction}>Acessar</Text>
-    </TouchableOpacity>
-  </View>
-</View>
-<View style={styles.serviceItem}>
-  <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#c3fec7ff" }]}>
-      
-      <FontAwesome name="medkit" size={18} color="#04ca04ff" />
-    </View>
-    <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}>CAAP + Fisio</Text>
-    </View>
-    <TouchableOpacity>
-      <Text style={styles.serviceAction}>Solicitar</Text>
-    </TouchableOpacity>
-  </View>
-</View>
-<View style={styles.serviceItem}>
-  <View style={styles.row}>
-    <View style={[styles.iconPlaceholder, { backgroundColor: "#FEF9C3" }]}>
-      <FontAwesome name="hotel" size={18} color="#CA8A04" />
-    </View>
-    <View style={{ flex: 1, marginLeft: 12 }}>
-      <Text style={styles.serviceTitle}> Hotel de Trânsito</Text>
-    </View>
-    <TouchableOpacity>
-      <Text style={styles.serviceAction}>Solicitar</Text>
-    </TouchableOpacity>
-  </View>
-</View>
-
-
-
-
-
+ 
 
      {/* Banners */}
      <BannerCard

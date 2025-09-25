@@ -23,6 +23,7 @@ export default function EditarDados() {
 
   const [nome, setNome] = useState(usuario?.nomeLogado || "");
   const [dataNascimento, setDataNascimento] = useState("");
+  const [cpf, setCpf] = useState(usuario?.cpf || ""); // <-- CPF adicionado
   const [celular, setCelular] = useState(usuario?.celular || "");
   const [email, setEmail] = useState(usuario?.email || "");
   const [cep, setCep] = useState(usuario?.endereco?.cep || "");
@@ -44,37 +45,44 @@ export default function EditarDados() {
   const [cidadeFiltrada, setCidadeFiltrada] = useState<string[]>([]);
   const [cidadeId, setCidadeId] = useState<string>("");
 
-
-  function validarDataNascimento(data: string): boolean {
-  // Espera o formato "dd/mm/aaaa"
-  const partes = data.split('/');
-  if (partes.length !== 3) return false;
-
-  const dia = parseInt(partes[0], 10);
-  const mes = parseInt(partes[1], 10) - 1; // mês começa do 0 no JS
-  const ano = parseInt(partes[2], 10);
-
-  const dataObj = new Date(ano, mes, dia);
-
-  // Verifica se a data existe de fato
-  if (
-    dataObj.getFullYear() !== ano ||
-    dataObj.getMonth() !== mes ||
-    dataObj.getDate() !== dia
-  ) {
-    return false;
+  // ✅ Função para converter data "2001-02-20" → "20/02/2001"
+  function formatDateFromApi(dateStr: string): string {
+    if (!dateStr) return "";
+    const partes = dateStr.split("-");
+    if (partes.length !== 3) return dateStr;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
   }
 
-  // Verifica se não é uma data futura
-  const hoje = new Date();
-  if (dataObj > hoje) return false;
+  // Validação da data
+  function validarDataNascimento(data: string): boolean {
+    const partes = data.split("/");
+    if (partes.length !== 3) return false;
 
-  // Opcional: idade mínima 18 anos
-  const idade = hoje.getFullYear() - ano - (hoje.getMonth() < mes || (hoje.getMonth() === mes && hoje.getDate() < dia) ? 1 : 0);
-  if (idade < 18) return false;
+    const dia = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10) - 1;
+    const ano = parseInt(partes[2], 10);
 
-  return true;
-}
+    const dataObj = new Date(ano, mes, dia);
+
+    if (
+      dataObj.getFullYear() !== ano ||
+      dataObj.getMonth() !== mes ||
+      dataObj.getDate() !== dia
+    ) {
+      return false;
+    }
+
+    const hoje = new Date();
+    if (dataObj > hoje) return false;
+
+    const idade =
+      hoje.getFullYear() -
+      ano -
+      (hoje.getMonth() < mes || (hoje.getMonth() === mes && hoje.getDate() < dia) ? 1 : 0);
+    if (idade < 18) return false;
+
+    return true;
+  }
 
   // Máscara de data de nascimento
   const formatDateInput = (text: string) => {
@@ -92,10 +100,10 @@ export default function EditarDados() {
 
   const formatDateForApi = (text: string) => formatDateInput(text);
 
-  // quando abrir a tela, já formata a data do usuário em dd/mm/aaaa
+  // ✅ Ao carregar usuário, converter data para BR
   useEffect(() => {
     if (usuario?.dataNascimento) {
-      setDataNascimento(formatDateInput(usuario.dataNascimento));
+      setDataNascimento(formatDateFromApi(usuario.dataNascimento));
     }
   }, [usuario]);
 
@@ -124,8 +132,8 @@ export default function EditarDados() {
   useEffect(() => {
     const carregarCidades = async () => {
       if (usuario?.endereco?.idMunicipio) {
-    setCidadeId(String(usuario.endereco.idMunicipio));
-  }
+        setCidadeId(String(usuario.endereco.idMunicipio));
+      }
       if (!estado) return;
       try {
         const res = await fetch(`${API_BASE_URL}listarCidades`, {
@@ -142,7 +150,6 @@ export default function EditarDados() {
     carregarCidades();
   }, [estado]);
 
-  // Filtrar cidades
   useEffect(() => {
     if (!cidade) setCidadeFiltrada([]);
     else {
@@ -153,7 +160,6 @@ export default function EditarDados() {
     }
   }, [cidade, cidades]);
 
-  // Filtrar estados
   useEffect(() => {
     if (!estado) setUfsFiltradas([]);
     else {
@@ -166,103 +172,94 @@ export default function EditarDados() {
     }
   }, [estado, ufs]);
 
-
-
-async function handleSalvar() {
-  if (!nome || !email) {
-    Alert.alert("Erro", "Nome e e-mail são obrigatórios.");
-    return;
-  }
-  if (!validarDataNascimento(dataNascimento)) {
-  Alert.alert("Erro", "Data de nascimento inválida. Verifique o formato dd/mm/aaaa e a idade mínima.");
-  return;
-}
-
-
-  if (!senha) {
-    Alert.alert("Erro", "Confirme sua senha atual para salvar as alterações.");
-    return;
-  }
-
-  try {
-   
-    const hashSalvo = await getHash();
-    console.log("Hash da sessão salvo:", hashSalvo);
-    if (!hashSalvo) {
-      Alert.alert("Erro", "Não foi possível verificar a sessão. Faça login novamente.");
+  async function handleSalvar() {
+    if (!nome || !email) {
+      Alert.alert("Erro", "Nome e e-mail são obrigatórios.");
+      return;
+    }
+    if (!validarDataNascimento(dataNascimento)) {
+      Alert.alert("Erro", "Data de nascimento inválida. Verifique o formato dd/mm/aaaa e a idade mínima.");
       return;
     }
 
-    
-    console.log("Senha digitada pelo usuário:", senha);
-
-    const formData = new FormData();
-    formData.append("nome", nome);
-    formData.append("dataNascimento", formatDateForApi(dataNascimento));
-    formData.append("celular", celular);
-    formData.append("email", email);
-    formData.append("cep", cep);
-    formData.append("bairro", bairro);
-    formData.append("logradouro", logradouro);
-    formData.append("numero", numero);
-    formData.append("complemento", complemento);
-    formData.append("cidade", cidadeId || cidade);
-    formData.append("senha", senha);
-
-    // 4️⃣ Mostra todos os dados antes de enviar
-    console.log("FormData a ser enviado:");
-    formData.forEach((value, key) => console.log(key, value));
-
-    // 5️⃣ Faz a requisição
-    const res = await fetch(`${API_BASE_URL}alterarCadastro`, {
-      method: "POST",
-      headers: {
-        hash: hashSalvo,
-        idUsuarioLogado: idUsuario?.toString() || "",
-      },
-      body: formData,
-    });
-
-    console.log("Resposta HTTP:", res.status, res.statusText);
-
-    const contentType = res.headers.get("content-type");
-    let data: any;
-    if (contentType?.includes("application/json")) data = await res.json();
-    else data = { ok: res.ok, raw: await res.text() };
-
-    console.log("Dados retornados pela API:", data);
-
-    if (data.ok) {
-      Alert.alert("Sucesso", "Dados atualizados com sucesso!");
-      const usuarioAtualizado = {
-        ...usuario,
-        nomeLogado: nome,
-        dataNascimento: formatDateForApi(dataNascimento),
-        celular,
-        email,
-        endereco: {
-          ...usuario?.endereco,
-          id: usuario?.endereco?.id,
-          cep,
-          logradouro,
-          complemento,
-          numero,
-          bairro,
-        },
-      };
-      setUsuario(usuarioAtualizado);
-    } else {
-      Alert.alert("Erro", data.erro || "Senha incorreta ou não foi possível atualizar os dados.");
+    if (!senha) {
+      Alert.alert("Erro", "Confirme sua senha atual para salvar as alterações.");
+      return;
     }
-  } catch (err: any) {
-    console.log("Erro no handleSalvar:", err);
-    Alert.alert("Erro", err.message || "Erro inesperado.");
+
+    try {
+      const hashSalvo = await getHash();
+      console.log("Hash da sessão salvo:", hashSalvo);
+      if (!hashSalvo) {
+        Alert.alert("Erro", "Não foi possível verificar a sessão. Faça login novamente.");
+        return;
+      }
+
+      console.log("Senha digitada pelo usuário:", senha);
+
+      const formData = new FormData();
+      formData.append("nome", nome);
+      formData.append("cpf", cpf); // <-- CPF enviado
+      formData.append("dataNascimento", formatDateForApi(dataNascimento));
+      formData.append("celular", celular);
+      formData.append("email", email);
+      formData.append("cep", cep);
+      formData.append("bairro", bairro);
+      formData.append("logradouro", logradouro);
+      formData.append("numero", numero);
+      formData.append("complemento", complemento);
+      formData.append("cidade", cidadeId || cidade);
+      formData.append("senha", senha);
+
+      console.log("FormData a ser enviado:");
+      formData.forEach((value, key) => console.log(key, value));
+
+      const res = await fetch(`${API_BASE_URL}alterarCadastro`, {
+        method: "POST",
+        headers: {
+          hash: hashSalvo,
+          idUsuarioLogado: idUsuario?.toString() || "",
+        },
+        body: formData,
+      });
+
+      console.log("Resposta HTTP:", res.status, res.statusText);
+
+      const contentType = res.headers.get("content-type");
+      let data: any;
+      if (contentType?.includes("application/json")) data = await res.json();
+      else data = { ok: res.ok, raw: await res.text() };
+
+      console.log("Dados retornados pela API:", data);
+
+      if (data.ok) {
+        Alert.alert("Sucesso", "Dados atualizados com sucesso!");
+        const usuarioAtualizado = {
+          ...usuario,
+          nomeLogado: nome,
+          cpf,
+          dataNascimento: formatDateForApi(dataNascimento),
+          celular,
+          email,
+          endereco: {
+            ...usuario?.endereco,
+            id: usuario?.endereco?.id,
+            cep,
+            logradouro,
+            complemento,
+            numero,
+            bairro,
+          },
+        };
+        setUsuario(usuarioAtualizado);
+      } else {
+        Alert.alert("Erro", data.erro || "Senha incorreta ou não foi possível atualizar os dados.");
+      }
+    } catch (err: any) {
+      console.log("Erro no handleSalvar:", err);
+      Alert.alert("Erro", err.message || "Erro inesperado.");
+    }
   }
-}
-
-
-
-
 
   return (
     <KeyboardAvoidingView
@@ -281,6 +278,15 @@ async function handleSalvar() {
         <View style={styles.formContainer}>
           <AppText style={styles.label}>Nome</AppText>
           <TextInput style={styles.input} value={nome} onChangeText={setNome} />
+
+          <AppText style={styles.label}>CPF</AppText>
+          <TextInput
+            style={styles.input}
+            value={cpf}
+            onChangeText={setCpf}
+            keyboardType="numeric"
+            placeholder="Digite seu CPF"
+          />
 
           <AppText style={styles.label}>Data de Nascimento</AppText>
           <TextInput

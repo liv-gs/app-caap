@@ -8,14 +8,13 @@ import {
   FlatList,
   Linking,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker"; // instalar: expo install @react-native-picker/picker
+import { Dropdown } from "react-native-element-dropdown";
 import AppText from "../components/AppText";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { RootStackParamList } from "../types/types";
-import { Dropdown } from 'react-native-element-dropdown';
-
 
 type DadosConvenioRouteProp = RouteProp<RootStackParamList, "DadosConvenio">;
 
@@ -48,6 +47,11 @@ export default function DadosConvenio() {
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [cidadeSelecionada, setCidadeSelecionada] = useState<string>("");
 
+  // Estado para modal
+  const [selectedConvenio, setSelectedConvenio] = useState<Convenio | null>(
+    null
+  );
+
   // 🔹 Buscar cidades
   useEffect(() => {
     const fetchCidades = async () => {
@@ -71,7 +75,9 @@ export default function DadosConvenio() {
 
     setLoading(true);
     try {
-      const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${categoria ?? ""}&page=${page}&per_page=10`;
+      const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${
+        categoria ?? ""
+      }&page=${page}&per_page=10`;
 
       const res = await fetch(url);
       const json = await res.json();
@@ -97,7 +103,9 @@ export default function DadosConvenio() {
       setHasMore(true);
       setLoading(true);
       try {
-        const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${categoria ?? ""}&page=1&per_page=10`;
+        const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${
+          categoria ?? ""
+        }&page=1&per_page=10`;
         const res = await fetch(url);
         const json = await res.json();
         setData(json);
@@ -120,14 +128,11 @@ export default function DadosConvenio() {
   const renderItem = ({ item }: { item: Convenio }) => (
     <View style={styles.card}>
       {item.image ? (
-        <ImageBackground
-          source={{ uri: item.image }}
-          style={styles.imagem}
-          imageStyle={{ borderTopLeftRadius: 16, borderBottomLeftRadius: 16 }}
-        >
-          <View style={styles.overlay}>
-            <AppText style={styles.tituloOverlay}>{item.title}</AppText>
-          </View>
+       <ImageBackground
+        source={{ uri: item.image }}
+        style={styles.imagem}
+        imageStyle={{ borderTopLeftRadius: 16, borderBottomLeftRadius: 16, resizeMode: "contain" }}
+      >
         </ImageBackground>
       ) : (
         <View
@@ -151,37 +156,9 @@ export default function DadosConvenio() {
           {item.content.replace(/<[^>]*>/g, "")}
         </AppText>
 
-        {item.cidade?.length > 0 && (
-          <View style={styles.badgeContainer}>
-            {item.cidade.map((cidade) => (
-              <AppText key={cidade} style={styles.badge}>
-                📍 {cidade}
-              </AppText>
-            ))}
-          </View>
-        )}
-
-        {item.categoria?.length > 0 && (
-          <View style={styles.badgeContainer}>
-            {item.categoria.map((cat) => (
-              <AppText key={cat} style={styles.badge}>
-                🏷️ {cat}
-              </AppText>
-            ))}
-          </View>
-        )}
-
-        {item.content.includes("http") && (
-          <TouchableOpacity
-            onPress={() => {
-              const regex = /(https?:\/\/[^\s"]+)/g;
-              const link = item.content.match(regex)?.[0];
-              if (link) abrirLink(link);
-            }}
-          >
-            <AppText style={styles.link}>Visite nosso site</AppText>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={() => setSelectedConvenio(item)}>
+          <AppText style={styles.link}>Ver mais</AppText>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -196,28 +173,25 @@ export default function DadosConvenio() {
         <Text style={styles.headerTitle}>Convênios</Text>
       </View>
 
-  
-
-   <View style={styles.filtro}>
-      <Dropdown
-        style={styles.dropdown}
-        containerStyle={styles.dropdownContainer}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        iconStyle={styles.iconStyle}
-        data={cidades.map(c => ({ label: c.name, value: c.slug }))}
-        maxHeight={300}
-        labelField="label"
-        valueField="value"
-        placeholder="Selecione a cidade"
-        value={cidadeSelecionada}
-        onChange={item => {
-          setCidadeSelecionada(item.value);
-        }}
-      />
-    </View>
-
-
+      {/* 🔹 Filtro de cidades */}
+      <View style={styles.filtro}>
+        <Dropdown
+          style={styles.dropdown}
+          containerStyle={styles.dropdownContainer}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          iconStyle={styles.iconStyle}
+          data={cidades.map((c) => ({ label: c.name, value: c.slug }))}
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder="Selecione a cidade"
+          value={cidadeSelecionada}
+          onChange={(item) => {
+            setCidadeSelecionada(item.value);
+          }}
+        />
+      </View>
 
       {/* 🔹 Lista */}
       <FlatList
@@ -231,6 +205,54 @@ export default function DadosConvenio() {
           loading ? <ActivityIndicator size="small" color="#0D3B66" /> : null
         }
       />
+
+      {/* 🔹 Modal com detalhes */}
+      <Modal
+        visible={!!selectedConvenio}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setSelectedConvenio(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <AppText style={styles.modalTitle}>
+              {selectedConvenio?.title}
+            </AppText>
+            <AppText style={styles.modalDescricao}>
+              {selectedConvenio?.content.replace(/<[^>]*>/g, "")}
+            </AppText>
+
+            {selectedConvenio?.cidade?.length > 0 && (
+              <View style={styles.badgeContainer}>
+                {selectedConvenio.cidade.map((cidade) => (
+                  <AppText key={cidade} style={styles.badge}>
+                    📍 {cidade}
+                  </AppText>
+                ))}
+              </View>
+            )}
+
+            {selectedConvenio?.categoria?.length > 0 && (
+              <View style={styles.badgeContainer}>
+                {selectedConvenio.categoria.map((cat) => (
+                  <AppText key={cat} style={styles.badge}>
+                    🏷️ {cat}
+                  </AppText>
+                ))}
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setSelectedConvenio(null)}
+            >
+              <AppText style={{ color: "#fff", fontWeight: "bold" }}>
+                Fechar
+              </AppText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -249,7 +271,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   headerTitle: { fontSize: 20, fontWeight: "600", color: "#0D3B66" },
-  
+
   card: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -266,7 +288,6 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.3)",
     padding: 10,
   },
   tituloOverlay: { color: "#fff", fontWeight: "700", fontSize: 16 },
@@ -292,44 +313,75 @@ const styles = StyleSheet.create({
   },
   link: { fontSize: 14, color: "#12adaf", fontWeight: "bold" },
 
+  dropdownContainer: {
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+  },
 
-dropdownContainer: {
-  borderRadius: 12,
-  backgroundColor: '#fff',
-  elevation: 5, // sombra no Android
-  shadowColor: '#000', // sombra no iOS
-  shadowOpacity: 0.1,
-  shadowOffset: { width: 0, height: 2 },
-  shadowRadius: 8,
-},
+  filtro: {
+    marginBottom: 12,
+  },
+  dropdown: {
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#fff",
+  },
+  placeholderStyle: {
+    fontSize: 14,
+    color: "#999",
+  },
+  selectedTextStyle: {
+    fontSize: 14,
+    color: "#0D3B66",
+    fontWeight: "600",
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 14,
+    color: "#0D3B66",
+  },
 
-filtro: {
-  marginBottom: 12,
-},
-dropdown: {
-  height: 50,
-  borderWidth: 1,
-  borderRadius: 12,
-  paddingHorizontal: 12,
-  backgroundColor: '#fff',
-},
-placeholderStyle: {
-  fontSize: 14,
-  color: '#999',
-},
-selectedTextStyle: {
-  fontSize: 14,
-  color: '#0D3B66',
-  fontWeight: '600',
-},
-iconStyle: {
-  width: 20,
-  height: 20,
-},
-inputSearchStyle: {
-  height: 40,
-  fontSize: 14,
-  color: '#0D3B66',
-},
-
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#0D3B66",
+  },
+  modalDescricao: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 12,
+  },
+  modalButton: {
+    marginTop: 16,
+    backgroundColor: "#0D3B66",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
 });
