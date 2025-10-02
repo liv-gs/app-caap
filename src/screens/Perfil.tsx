@@ -125,7 +125,7 @@ export default function Dados() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 110,
+    paddingTop: 130,
     flexGrow: 1,
     padding: 24,
     backgroundColor: '#e1e1e167',
@@ -133,11 +133,12 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 22,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 15,
     textAlign: 'center',
-    color: '#173C6B',
+    color: '#10567C',
   },
+  
   carteira: {
     backgroundColor: '#fff',
     width: '100%',

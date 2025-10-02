@@ -20,6 +20,9 @@ import { AuthStackParamList } from "../../navigation/index";
 import FundoSvg from "../../../assets/images/FUNDO.svg";
 import LogoSvg from "../../../assets/images/Camada_1.svg";
 import { readAsStringAsync, EncodingType } from "expo-file-system/legacy";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 
 // 🔹 Tipagem do Input
 type InputProps = {
@@ -35,6 +38,9 @@ type CadastroEnderecoRouteProp = RouteProp<
   AuthStackParamList,
   "CadastroEndereco"
 >;
+type NavProp = NativeStackNavigationProp<AuthStackParamList, "CadastroEndereco">;
+
+
 
 export async function fileToBase64(uri: string) {
   try {
@@ -53,12 +59,13 @@ const maskCEP = (v: string) => {
 };
 
 const FormEnd: React.FC = () => {
+  const navigation = useNavigation<NavProp>();
   const route = useRoute<CadastroEnderecoRouteProp>();
   const { dados, carteira } = route.params;
 
   const [cep, setCep] = useState("");
   const [estado, setEstado] = useState<string | null>(null);
-  const [cidade, setCidade] = useState<number | null>(null); // id da cidade
+  const [cidade, setCidade] = useState<number | null>(null); 
   const [bairro, setBairro] = useState("");
   const [logradouro, setLogradouro] = useState("");
   const [numero, setNumero] = useState("");
@@ -158,6 +165,7 @@ const FormEnd: React.FC = () => {
       );
 
       Alert.alert("Sucesso", "Cadastro concluído!");
+      navigation.navigate("CadastroValidacao"); 
       console.log("Resposta API:", response.data);
     } catch (error: any) {
       console.error("Erro ao enviar cadastro:", error?.response?.data || error);
@@ -169,21 +177,39 @@ const FormEnd: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.select({ ios: "padding", android: undefined })}
-    >
+    <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+     
       <View style={styles.fundoWrapper} pointerEvents="none">
-        <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+        <FundoSvg
+          width="100%"
+          height="100%"
+          preserveAspectRatio="xMidYMid slice"
+        />
       </View>
 
+     
       <View style={styles.logoWrapper}>
-        <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
+        <LogoSvg
+          width={200}
+          height={120}
+          preserveAspectRatio="xMidYMid meet"
+        />
       </View>
 
-      <View style={styles.containerWrapper}>
-        <View style={styles.formBox}>
-          <Text style={styles.headerTitle}>Endereço</Text>
+     
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-end" }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.containerWrapper}>
+            <View style={styles.formBox}>
+              <Text style={styles.headerTitle}>Endereço</Text>
 
           <ScrollView
             style={styles.formScroll}
@@ -225,10 +251,10 @@ const FormEnd: React.FC = () => {
               </Picker>
             </View>
 
-            <LabeledInput label="Bairro*" value={bairro} onChangeText={setBairro} />
-            <LabeledInput label="Logradouro*" value={logradouro} onChangeText={setLogradouro} />
-            <LabeledInput label="Número*" value={numero} onChangeText={setNumero} keyboardType="numeric" />
-            <LabeledInput label="Complemento" value={complemento} onChangeText={setComplemento} />
+            <LabeledInput label="Bairro*" placeholder="Digite seu bairro"value={bairro} onChangeText={setBairro} />
+            <LabeledInput label="Logradouro*"   placeholder="Rua, avenida..." value={logradouro} onChangeText={setLogradouro} />
+            <LabeledInput label="Número*"   placeholder="Número da residência" value={numero} onChangeText={setNumero} keyboardType="numeric" />
+            <LabeledInput label="Complemento"  placeholder="Apartamento, bloco, sala..." value={complemento} onChangeText={setComplemento} />
           </ScrollView>
 
           <TouchableOpacity
@@ -240,8 +266,10 @@ const FormEnd: React.FC = () => {
             <Text style={styles.buttonText}>Concluir</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -273,7 +301,6 @@ const styles = StyleSheet.create({
   containerWrapper: { flex: 1, alignItems: "center", paddingHorizontal: 16 },
   formBox: {
     width: "100%",
-    maxHeight: "85%",
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,

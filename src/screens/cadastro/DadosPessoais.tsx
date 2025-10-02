@@ -215,22 +215,31 @@ const onSubmit = async () => {
 };
 
 
+return (
+  <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+    {/* Fundo fixo */}
+    <View style={styles.fundoWrapper} pointerEvents="none">
+      <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+    </View>
 
-  return (
+    {/* Logo fixo */}
+    <View style={styles.logoWrapper}>
+      <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
+    </View>
+
+    {/* Apenas o formulário sobe com o teclado */}
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#ffffff" }}
-      behavior={Platform.select({ ios: "padding", android: undefined })}
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0} 
     >
-      <View style={styles.fundoWrapper} pointerEvents="none">
-        <FundoSvg width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
-      </View>
-
-      <View style={styles.logoWrapper}>
-        <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
-      </View>
-
-      <View style={styles.containerWrapper}>
-        <View style={styles.formBox}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-end" }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.containerWrapper}>
+          <View style={styles.formBox}>
           <Text style={styles.headerTitle}>Dados Pessoais</Text>
 
           <ScrollView
@@ -329,11 +338,13 @@ const onSubmit = async () => {
             >
               <Text style={styles.buttonText}>{tipo === "advogado" ? "Avançar" : "Concluir Cadastro"}</Text>
             </TouchableOpacity>
-          </ScrollView>
+               </ScrollView>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
-  );
+  </View>
+);
 };
 
 // ------------------------
@@ -379,7 +390,7 @@ const styles = StyleSheet.create({
   containerWrapper: { flex: 1, paddingTop: 10, alignItems: "center", paddingHorizontal: 16 },
   formBox: {
     width: "100%",
-    maxHeight: "90%",
+   
     backgroundColor: "#fff",
     borderRadius: 16,
     borderWidth: 1,

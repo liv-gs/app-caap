@@ -164,11 +164,11 @@ const styles = StyleSheet.create({
   },
   header: {
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: '600',
     fontSize: 22,
     marginBottom: 40,
     paddingTop: 20,
-    color: '#173C6B',
+    color: '#10567C',
   },
   carteirinha: {
     width: 360,

@@ -96,19 +96,24 @@ export default function Service() {
   }
 
   return (
+  <View style={styles.container}>
+    {/* Título fixo */}
+    <Text style={styles.pageTitle}>Serviços</Text>
+
+    {/* Conteúdo rolável */}
     <ScrollView
-      style={styles.container}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.pageTitle}>Serviços</Text>
       <View style={styles.cardsWrapper}>
         {services.map((service) => (
           <Card key={service.id} {...service} />
         ))}
       </View>
     </ScrollView>
-  );
+  </View>
+);
+
 }
 
 // 🔹 Estilos
@@ -120,14 +125,16 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 40,
-    paddingTop: 100,
+  
   },
-  pageTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    marginVertical: 20,
-    color: "#10567C",
-  },
+pageTitle: {
+  fontSize: 24,
+  fontWeight: "600",
+  color: "#10567C",
+  marginTop: 120, 
+  marginBottom: 20,
+},
+
   cardsWrapper: {
     alignItems: "center",
   },

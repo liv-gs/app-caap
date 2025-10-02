@@ -13,7 +13,7 @@ import DadosConvenio from '../screens/DadosConvenio';
 import Calendar from '../screens/agendamento';
 import DadosService from '../screens/DadosService';
 import Home from '../screens/Home';
-import AlterarSenha from '../screens/AlterarSenha'; // <-- IMPORTANTE
+import AlterarSenha from '../screens/AlterarSenha'; 
 
 import LogoSvg from '../../assets/images/Camada_1.svg';
 import HeaderBg from '../../assets/images/FUNDO.svg';
@@ -28,14 +28,14 @@ function HeaderBackground() {
   return (
     <View style={{ position: 'absolute', top: 0, left:0, right:0, bottom:0 }}>
       <HeaderBg width="100%" height="110%" preserveAspectRatio="xMidYMid slice" />
-      <View style={{ position: 'absolute', right: 12, top: 10 }}>
+      <View style={{ position: 'absolute', right: 12, top: 25 }}>
         <LogoSvg width={100} height={100} />
       </View>
     </View>
   );
 }
 
-// Stack com as telas que usam header background
+
 function MainStack() {
   return (
     <Stack.Navigator

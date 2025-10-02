@@ -15,7 +15,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { Linking } from "react-native";
 
-// tipo para notícia
+
 
 type NewsType = {
   id: string;
@@ -23,7 +23,7 @@ type NewsType = {
   tagColor: string;
   title: string;
   createdAt: string;
-  link: string;  // 👈 adiciona aqui
+  link: string; 
 };
 
 
@@ -41,31 +41,27 @@ type NewsItemProps = {
   tag: string;
   tagColor: string;
   title: string;
-  link: string;   // 👈 novo
+  link: string;   
 };
 
 function NewsItem({ tag, tagColor, title, link }: NewsItemProps) {
   return (
     <TouchableOpacity
-  style={styles.newsItem}
-  onPress={() => alert("Cliquei!")}
->
-  <View style={{ flex: 1 }}>
-    <Text style={[styles.newsTag, { color: tagColor }]}>{tag}</Text>
-    <Text style={styles.newsTitle}>{title}</Text>
-  </View>
-</TouchableOpacity>
-
+      style={styles.newsItem}
+      onPress={() => Linking.openURL("https://sites-caapi.mpsip8.easypanel.host/noticias/")} 
+    >
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.newsTag, { color: tagColor }]}>{tag}</Text>
+        <Text style={styles.newsTitle}>{title}</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
-
-
-
 
 type BannerCardProps = {
   title: string;
   onPress: () => void;
-  Background: React.ComponentType<any>; // componente SVG
+  Background: React.ComponentType<any>; 
 };
 
 
@@ -117,34 +113,32 @@ export default function Home() {
 
 
     useEffect(() => {
-      fetch("https://sites-caapi.mpsip8.easypanel.host/wp-json/wp/v2/posts") // sua API WordPress
-        .then((res) => res.json())
-        .then((data: any[]) => {
-          // Mapeia os dados para o formato correto
-          const mapped: NewsType[] = data.map(item => ({
-            id: item.id.toString(),
-            tag: "COMUNICADO",
-            tagColor: "#D4A017",
-            title: item.title.rendered,
-            createdAt: item.date,
-            link: item.link,   // 👈 pega do WordPress
-          }));
+  fetch("https://sites-caapi.mpsip8.easypanel.host/wp-json/wp/v2/posts?_embed") // adiciona _embed
+    .then(res => res.json())
+    .then((data: any[]) => {
+      const mapped: NewsType[] = data.map(item => ({
+        id: item.id.toString(),
+        tag: "COMUNICADO",
+        tagColor: "#D4A017",
+        title: item.title.rendered,
+        createdAt: item.date,
+        link: item.link,
+        image: item._embedded?.['wp:featuredmedia']?.[0]?.source_url || "https://placehold.co/100x100" // fallback
+      }));
 
-          // Ordena por data decrescente (mais recente primeiro)
-          const sortedNews = mapped.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+      const sortedNews = mapped.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setNews(sortedNews.slice(0, 3));
+    })
+    .catch(err => console.error(err))
+    .finally(() => setLoading(false));
+}, []);
 
-          // Pega apenas as 3 primeiras
-          setNews(sortedNews.slice(0, 3));
-        })
-        .catch((err) => console.error(err))
-        .finally(() => setLoading(false));
-    }, []);
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#E5E7EB" }}>
     <ScrollView   contentContainerStyle={{ padding: 20, paddingTop:100,}}
     showsVerticalScrollIndicator={false}>
       {/* Header */}
@@ -249,7 +243,7 @@ export default function Home() {
             tag={item.tag}
             tagColor={item.tagColor}
             title={item.title}
-            link={item.link}   // 👈 agora cada notícia tem seu link real
+            link={item.link}  
           />
         ))
         )}
@@ -308,21 +302,20 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontWeight: "600" },
 
-  //acoes rapidas, serviços, noticias titulo
+
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12, color: "#0D3B66", paddingTop:25,paddingBottom:6, },
 
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    
+ 
 
-    //Ações rapidas 
   },
   gridItem: {
   backgroundColor: "#fff",
   width: "48%",
-  height: 120,          // altura do card
+  height: 120,       
   borderRadius: 16,
   padding: 8,
   marginBottom: 14,
@@ -331,35 +324,35 @@ const styles = StyleSheet.create({
   shadowOffset: { width: 0, height: 2 },
   shadowRadius: 4,
   elevation: 2,
-  position: "relative",  // necessário pro absolute
+  position: "relative", 
   },
 gridIconText: {
   position: "absolute",
   top: 8,
-  left: 8,              // canto superior esquerdo
-  alignItems: "flex-start",  // mantém o texto abaixo do ícone, alinhado à esquerda
-  flexShrink: 0,        // impede que o texto quebre
-  width: undefined,       // deixa o texto usar sua largura natural
+  left: 8,             
+  alignItems: "flex-start", 
+  flexShrink: 0,       
+  width: undefined,     
 },
 
 gridText: {
   marginTop: 4,
   fontSize: 14,
   fontWeight: "500",
-  textAlign: "left",     // alinhamento à esquerda
-  flexShrink: 0,          // impede quebra de linha
+  textAlign: "left",   
+  flexShrink: 0,        
   color:'#53555A',
 },
 iconWrapper: {
-  width: 48,                // largura da caixa
-  height: 48,               // altura da caixa
+  width: 48,                
+  height: 48,              
   justifyContent: "center",
   alignItems: "center",
-  borderWidth: 1,           // borda da caixa
-  borderColor: "#E5E7EB",  // cor da borda
-  borderRadius: 8,          // cantos arredondados
-  backgroundColor: "#E5E7EB",  // fundo da caixa, opcional
-  marginBottom: 4,          // espaçamento entre a caixa e o texto
+  borderWidth: 1,          
+  borderColor: "#E5E7EB",  
+  borderRadius: 8,         
+  backgroundColor: "#E5E7EB",  
+  marginBottom: 4,         
 },
 
 
@@ -407,7 +400,7 @@ iconWrapper: {
     width: 60,
     height: 60,
     borderRadius: 10,
-    backgroundColor: "#EAF0F6", // 👉 Aqui depois você substitui pela imagem real
+    backgroundColor: "#EAF0F6",
     marginRight: 12,
   },
   newsTag: {
