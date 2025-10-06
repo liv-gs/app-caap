@@ -14,6 +14,7 @@ import { loginAdvogado } from "../api/api";
 // Importando SVGs como componentes
 import FundoSvg from "../../assets/images/FUNDO.svg";
 import GroupSvg from "../../assets/images/Group.svg";
+import { ActivityIndicator } from "react-native";
 
 import LogoSvg  from "../../assets/images/Camada_1.svg";
 type LoginScreenProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
@@ -31,6 +32,7 @@ export default function LoginScreen() {
   const { setUsuario } = useAuth();
 
 const handleLogin = async () => {
+  setLoading(true);
   try {
     const data = await loginAdvogado(cpf, senha);
  console.log("🔹 Dados retornados da API:", data);
@@ -126,10 +128,12 @@ const handleLogin = async () => {
             onPress={handleLogin}
             disabled={loading}
           >
-            <Text style={styles.buttonText}>
-              {loading ? "Entrando..." : "Entrar"}
-            </Text>
-          </TouchableOpacity>
+            {loading ? (
+            <ActivityIndicator color="#fff" /> 
+          ) : (
+            <Text style={styles.buttonText}>Entrar</Text>
+          )}
+        </TouchableOpacity>
 
           <TouchableOpacity onPress={() => navigation.navigate("EscolhaTipo")}>
             <Text style={styles.link}>
