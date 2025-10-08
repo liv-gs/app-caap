@@ -18,7 +18,8 @@ import {
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../types/types";
+import { MainStackParamList } from "../types/types";
+
 
 
 type IconConfig = {
@@ -62,9 +63,10 @@ type Categoria = {
 };
 
 type CategoriasScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
+  MainStackParamList,
   "Categorias"
 >;
+
 
 export default function CategoriasScreen() {
   const navigation = useNavigation<CategoriasScreenNavigationProp>();
@@ -99,7 +101,7 @@ export default function CategoriasScreen() {
       case "MaterialIcons":
         return <MaterialIcons name={icon.name as any} size={20} color="#1D81B8" />;
       case "Ionicons":
-        return <Ionicons name={icon.name as any} size={20} color="#1D81B8" />;
+        return <Ionicons name={icon.name as any} size={25} color="#1D81B8" />;
       case "AntDesign":
         return <AntDesign name={icon.name as any} size={20} color="#1D81B8" />;
       case "FontAwesome5":

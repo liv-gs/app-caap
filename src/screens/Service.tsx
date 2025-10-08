@@ -139,7 +139,7 @@ pageTitle: {
     alignItems: "center",
   },
   card: {
-    width: "90%",
+    width: "100%",
     backgroundColor: "#0D3B66",
     borderRadius: 12,
     padding: 16,

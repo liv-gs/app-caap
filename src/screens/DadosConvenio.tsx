@@ -14,9 +14,10 @@ import { Feather } from "@expo/vector-icons";
 import { Dropdown } from "react-native-element-dropdown";
 import AppText from "../components/AppText";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../types/types";
 
-type DadosConvenioRouteProp = RouteProp<RootStackParamList, "DadosConvenio">;
+import { MainStackParamList } from "../types/types";
+type DadosConvenioRouteProp = RouteProp<MainStackParamList, "DadosConvenio">;
+
 
 type Convenio = {
   id: number;

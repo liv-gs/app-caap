@@ -15,6 +15,7 @@ import { loginAdvogado } from "../api/api";
 import FundoSvg from "../../assets/images/FUNDO.svg";
 import GroupSvg from "../../assets/images/Group.svg";
 import { ActivityIndicator } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 
 import LogoSvg  from "../../assets/images/Camada_1.svg";
 type LoginScreenProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
@@ -70,31 +71,32 @@ const handleLogin = async () => {
 
 
 
-  return (
-    <View style={styles.background}>
-      {/* Fundo como SVG */}
-      <FundoSvg
-        width="100%"
-        height="100%"
-        preserveAspectRatio="xMidYMid slice"
-        style={styles.svgBackground}
-      />
-      
-    <View style={styles.logoWrapper}>
-      <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
-    </View>
+return (
+  <View style={styles.background}>
+    {/* Fundo SVG */}
+    <FundoSvg
+      width="100%"
+      height="100%"
+      preserveAspectRatio="xMidYMid slice"
+      style={styles.svgBackground}
+    />
 
-      <View style={styles.footer}>
-          <GroupSvg
-            width="100%"
-            height={120}
-            preserveAspectRatio="xMidYMid slice"
-          />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.logoWrapper}>
+          <LogoSvg width={200} height={120} preserveAspectRatio="xMidYMid meet" />
         </View>
+        
 
-      <View style={styles.container}>
-        <FormContainer>
-          <Text style={styles.title}>Acesse sua conta</Text>
+        <View style={styles.container}>
+          <FormContainer>
+            <Text style={styles.title}>Acesse sua conta</Text>
 
           {error ? <Text style={styles.errorBanner}>{error}</Text> : null}
 
@@ -145,13 +147,20 @@ const handleLogin = async () => {
               Esqueceu sua senha?
             </Text>
           </TouchableOpacity>
-        </FormContainer>
+          </FormContainer>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
 
-        {/* Rodapé */}
-      
+        <View style={styles.footer}>
+          <GroupSvg
+            width="100%"
+            height={120}
+            preserveAspectRatio="xMidYMid slice"
+          />
+        </View>
       </View>
-    </View>
-  );
+    );
 }
 
 const styles = StyleSheet.create({
@@ -174,7 +183,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 400,
     padding: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255, 255, 255, 0.91)",
     borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
@@ -208,11 +217,12 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 48,
-    borderColor: "#ccc",
+    borderColor: "#646464ff",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: "#fff",
+    backgroundColor: "#e2e2e2d2",
+    color:"#000000ff"
   },
   button: {
     height: 48,
@@ -239,7 +249,7 @@ const styles = StyleSheet.create({
   },
   logoWrapper: {
   alignItems: "center",
-  marginTop: 140,  // distância do topo da tela
+  marginTop: 80,  // distância do topo da tela
 },
 
   logo: {

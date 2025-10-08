@@ -15,6 +15,7 @@ import AppText from "../components/AppText";
 import { useAuth } from "../context/AuthContext";
 import { Feather } from "@expo/vector-icons";
 import { getHash, getUsuarioLogado } from "../api/api";
+import { ActivityIndicator } from "react-native";
 
 const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
 
@@ -44,7 +45,8 @@ export default function EditarDados() {
   const [cidades, setCidades] = useState<any[]>([]);
   const [cidadeFiltrada, setCidadeFiltrada] = useState<string[]>([]);
   const [cidadeId, setCidadeId] = useState<string>("");
-
+ const [loading, setLoading] = useState(false);
+ 
   // ✅ Função para converter data "2001-02-20" → "20/02/2001"
   function formatDateFromApi(dateStr: string): string {
     if (!dateStr) return "";
@@ -187,6 +189,8 @@ export default function EditarDados() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const hashSalvo = await getHash();
       console.log("Hash da sessão salvo:", hashSalvo);
@@ -258,6 +262,8 @@ export default function EditarDados() {
     } catch (err: any) {
       console.log("Erro no handleSalvar:", err);
       Alert.alert("Erro", err.message || "Erro inesperado.");
+    } finally{
+      setLoading(false);
     }
   }
 
@@ -383,10 +389,21 @@ export default function EditarDados() {
             placeholder="Digite sua senha atual"
           />
 
-          <TouchableOpacity style={styles.button} onPress={handleSalvar}>
-            <Feather name="save" size={20} color="#fff" />
-            <AppText style={styles.buttonText}>Salvar</AppText>
+          <TouchableOpacity
+            style={[styles.button, loading && { opacity: 0.7 }]}
+            onPress={handleSalvar}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Feather name="save" size={20} color="#fff" />
+                <AppText style={styles.buttonText}>Salvar</AppText>
+              </>
+            )}
           </TouchableOpacity>
+
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

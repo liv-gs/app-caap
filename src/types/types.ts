@@ -1,24 +1,17 @@
 import type { ApiService } from "../types/ApiService";
 import type { Usuario } from "../types/Usuario";
 
+
+
+
+
 export type MainStackParamList = {
   Tabs: undefined;
   Service: undefined;
-
+  Categorias: undefined;
   DadosService: { service: ApiService };
-
-  DadosConvenio: {
-    convenio: {
-      id: number;
-      nome: string;
-      descricao: string;
-      imagem_destacada?: string | null;
-      usuario: Usuario;
-      tipo: string;
-    };
-  };
-
-  agendamento: { service: ApiService }; // ✅ agora recebe igual DadosService
+  DadosConvenio: { categoria: string }; // 👈 ajustado aqui
+  agendamento: { service: ApiService };
 };
 
 // Tipos dos cards de serviço

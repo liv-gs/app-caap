@@ -22,7 +22,7 @@ import LogoSvg from "../../../assets/images/Camada_1.svg";
 import { readAsStringAsync, EncodingType } from "expo-file-system/legacy";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
+import { ActivityIndicator } from "react-native";
 
 // 🔹 Tipagem do Input
 type InputProps = {
@@ -72,7 +72,7 @@ const FormEnd: React.FC = () => {
   const [complemento, setComplemento] = useState("");
   const [ufs, setUfs] = useState<{ id: string; nome: string; sigla: string }[]>([]);
   const [cidades, setCidades] = useState<{ id: string; nome: string }[]>([]);
-
+  const [loading, setLoading] = useState(false);
   const formatDateForApi = (date: string) => date;
 
   // 🔹 Buscar estados
@@ -121,6 +121,7 @@ const FormEnd: React.FC = () => {
       Alert.alert("Atenção", "Preencha todos os campos obrigatórios.");
       return;
     }
+    setLoading(true);
 
     try {
       const data = new FormData();
@@ -173,6 +174,8 @@ const FormEnd: React.FC = () => {
         "Erro",
         "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
       );
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -260,11 +263,16 @@ const FormEnd: React.FC = () => {
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={onSubmit}
-            disabled={!canSubmit}
-            style={[styles.button, !canSubmit && styles.buttonDisabled]}
+            disabled={!canSubmit || loading}
+            style={[styles.button, (!canSubmit || loading) && styles.buttonDisabled]}
           >
-            <Text style={styles.buttonText}>Concluir</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Concluir</Text>
+            )}
           </TouchableOpacity>
+
         </View>
           </View>
         </ScrollView>

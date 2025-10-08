@@ -10,7 +10,7 @@ expo install expo-image-picker
 
 npx expo start
 
-654 970 073 68
+65497007368
 
 
 

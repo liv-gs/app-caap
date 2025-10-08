@@ -17,6 +17,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { AuthStackParamList } from "../../navigation/index"; 
 import FundoSvg from "../../../assets/images/FUNDO.svg";
 import LogoSvg  from "../../../assets/images/Camada_1.svg";
+import { ActivityIndicator } from "react-native";
 
 type FormDadosNavProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -95,6 +96,7 @@ const FormDados: React.FC = () => {
   const [oab, setOab] = useState(""); 
   const [emailError, setEmailError] = useState<string | null>(null);
   const [cpfError, setCpfError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const passwordsMatch = useMemo(() => senha.length > 0 && senha === confirma, [senha, confirma]);
 
@@ -149,8 +151,14 @@ const onSubmit = async () => {
     return;
   }
 
+   setLoading(true);
+
   const valido = await verificarCadastro();
-  if (!valido) return;
+
+    if (!valido) {
+    setLoading(false); 
+    return;
+  }
 
   try {
     const data = new FormData();
@@ -186,7 +194,6 @@ const onSubmit = async () => {
      console.log(`${key}:`, value);
 }
 
-
       const headers = (data as any).getHeaders?.() ?? {
         "Content-Type": "multipart/form-data",
       };
@@ -196,14 +203,20 @@ const onSubmit = async () => {
         data,
         { headers }
       );
+      console.log("📦 Dados da resposta:", response.data);
+      setLoading(false);
 
-      if (response.status === 200 && response.data?.sucesso) {
-        Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
-        navigation.navigate("CadastroValidacao");
-      } else {
-        Alert.alert("Atenção", "Houve um problema ao concluir o cadastro.");
-        console.log("Resposta inesperada:", response.data);
-      }
+     if (
+      response.status === 200 &&
+      (response.data?.sucesso || response.data?.ok?.toLowerCase().includes("usuario logado"))
+    ) {
+      Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
+      navigation.navigate("CadastroValidacao");
+    } else {
+      console.log("Resposta inesperada:", response.data);
+      Alert.alert("Atenção", "Houve um problema ao concluir o cadastro.");
+    }
+
     }
   } catch (err: any) {
     console.error("Erro ao enviar cadastro:", err?.response?.data || err);
@@ -330,14 +343,21 @@ return (
               </Text>
             </View>
 
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={onSubmit}
-              disabled={!canSubmit}
-              style={[styles.button, !canSubmit && styles.buttonDisabled]}
-            >
-              <Text style={styles.buttonText}>{tipo === "advogado" ? "Avançar" : "Concluir Cadastro"}</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={onSubmit}
+            disabled={!canSubmit || loading}
+            style={[styles.button, (!canSubmit || loading) && styles.buttonDisabled]}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {tipo === "advogado" ? "Avançar" : "Concluir Cadastro"}
+              </Text>
+            )}
+          </TouchableOpacity>
+
                </ScrollView>
           </View>
         </View>
