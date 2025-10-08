@@ -110,6 +110,7 @@ return (
               keyboardType="numeric"
               maxLength={14}
               placeholder="000.000.000-00"
+              placeholderTextColor="#000000ff"
             />
           </View>
 
@@ -122,6 +123,7 @@ return (
               onChangeText={setSenha}
               secureTextEntry
               placeholder="12345"
+              placeholderTextColor="#000000ff"
             />
           </View>
 
@@ -221,7 +223,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: "#e2e2e2d2",
+    backgroundColor: "#eeeeeed2",
     color:"#000000ff"
   },
   button: {
