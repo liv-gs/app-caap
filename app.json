@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Caapi",
+    "name": "Caap",
     "slug": "my-app",
-    "version": "1.0.5",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png", 
     "userInterfaceStyle": "light",
     
     "splash": {
-      "image": "./assets/images/splash.png", 
+      "image": "./assets/images/FUNDO_OAB2.png", 
       "resizeMode": "contain", 
-      "backgroundColor": "#ffffff" 
+      "backgroundColor": "#184184" 
     },
 
     "assetBundlePatterns": [
@@ -24,10 +24,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png", 
-        "backgroundColor": "#ffffff" 
+        "backgroundColor": "#184184" 
       },
-      "package": "com.livgs.myapp",
-      "versionCode": 6
+      "package": "com.livgs.myapp" ,
+      "versionCode": 8
     },
 
     "web": {
