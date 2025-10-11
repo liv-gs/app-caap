@@ -7,6 +7,7 @@ expo install expo-image-picker
 
 
 
+244.746.410-00
 
 npx expo start
 

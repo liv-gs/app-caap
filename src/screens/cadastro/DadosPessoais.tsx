@@ -9,15 +9,16 @@ import {
   Platform,
   TouchableOpacity,
   Alert,
+  ActivityIndicator
 } from "react-native";
 import axios from "axios";
 import FormData from "form-data";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { AuthStackParamList } from "../../navigation/index"; 
+import { AuthStackParamList } from "../../navigation/index";
+
 import FundoSvg from "../../../assets/images/FUNDO.svg";
-import LogoSvg  from "../../../assets/images/Camada_1.svg";
-import { ActivityIndicator } from "react-native";
+import LogoSvg from "../../../assets/images/Camada_1.svg";
 
 type FormDadosNavProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -64,7 +65,13 @@ const isValidCPF = (cpfMasked: string) => onlyDigits(cpfMasked).length === 11;
 // ------------------------
 // checkbox simples
 // ------------------------
-function Checkbox({ checked, onToggle }: { checked: boolean; onToggle: () => void }) {
+function Checkbox({
+  checked,
+  onToggle,
+}: {
+  checked: boolean;
+  onToggle: () => void;
+}) {
   return (
     <TouchableOpacity
       onPress={onToggle}
@@ -93,12 +100,14 @@ const FormDados: React.FC = () => {
   const [celular, setCelular] = useState("");
   const [email, setEmail] = useState("");
   const [lgpdOk, setLgpdOk] = useState(false);
-  const [oab, setOab] = useState(""); 
   const [emailError, setEmailError] = useState<string | null>(null);
   const [cpfError, setCpfError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false);
 
-  const passwordsMatch = useMemo(() => senha.length > 0 && senha === confirma, [senha, confirma]);
+  const passwordsMatch = useMemo(
+    () => senha.length > 0 && senha === confirma,
+    [senha, confirma]
+  );
 
   const canSubmit = useMemo(() => {
     return (
@@ -115,48 +124,62 @@ const FormDados: React.FC = () => {
   // ------------------------
   // função para verificar CPF/email
   // ------------------------
-  const verificarCadastro = async (): Promise<boolean> => {
-    try {
-      const data = new FormData();
-      data.append("cpf", onlyDigits(cpf));
-      data.append("email", email);
-      data.append("dataNascimento", formatDateForApi(nascimento));
+ const verificarCadastro = async (): Promise<boolean> => {
+  try {
+    const data = new FormData();
+    data.append("cpf", onlyDigits(cpf));
+    data.append("email", email);
+    data.append("dataNascimento", nascimento); // formato dd/mm/aaaa
 
-      const config = { method: "post" as const, maxBodyLength: Infinity, url: "https://caapi.org.br/appcaapi/api/verificarCadastro", headers: { "Content-Type": "multipart/form-data" }, data };
-      const response = await axios.request(config);
+    const config = {
+      method: "post" as const,
+      maxBodyLength: Infinity,
+      url: "https://caapi.org.br/appcaapi/api/verificarCadastro",
+      headers: { "Content-Type": "multipart/form-data" },
+      data,
+    };
 
-      if (response.data?.erro) {
-        Alert.alert("Atenção", response.data.erro);
-        if (response.data.erro.toLowerCase().includes("cpf")) setCpfError(response.data.erro);
-        if (response.data.erro.toLowerCase().includes("e-mail")) setEmailError(response.data.erro);
-        return false;
-      }
-      return true;
-    } catch (err: any) {
-      Alert.alert("Erro", "Não foi possível verificar o cadastro. Tente novamente.");
-      console.error(err);
+    const response = await axios.request(config);
+
+    console.log("🔹 Resposta verificarCadastro:", response.data);
+
+    if (response.data?.erro) {
+      Alert.alert("Atenção", response.data.erro);
+      if (response.data.erro.toLowerCase().includes("cpf"))
+        setCpfError(response.data.erro);
+      if (response.data.erro.toLowerCase().includes("e-mail"))
+        setEmailError(response.data.erro);
       return false;
     }
-  };
 
-  // ------------------------
-  // submissão
-  // ------------------------
-  // ------------------------
-// submissão
-// ------------------------
+    // ✅ Se não tiver erro, está livre pra continuar
+    return true;
+  } catch (err: any) {
+    console.error("❌ Erro verificarCadastro:", err);
+    Alert.alert(
+      "Erro",
+      "Não foi possível verificar o cadastro. Tente novamente."
+    );
+    return false;
+  }finally{
+    setLoading(false); // sempre para o loading no fim
+  }
+};
+
 const onSubmit = async () => {
   if (!canSubmit) {
-    Alert.alert("Atenção", "Preencha todos os campos obrigatórios corretamente.");
+    Alert.alert(
+      "Atenção",
+      "Preencha todos os campos obrigatórios corretamente."
+    );
     return;
   }
 
-   setLoading(true);
+  setLoading(true); // mostra bolinha carregando
 
   const valido = await verificarCadastro();
-
-    if (!valido) {
-    setLoading(false); 
+  if (!valido) {
+    setLoading(false); // para o loading se já existe cadastro
     return;
   }
 
@@ -166,15 +189,14 @@ const onSubmit = async () => {
     data.append("cpf", onlyDigits(cpf));
     data.append("email", email);
     data.append("senha", senha);
-    data.append("dataNascimento",nascimento);
+    data.append("dataNascimento", nascimento);
     data.append("rg", rg);
     data.append("celular", celular);
-
-    // 🔑 agora sempre manda o tipo
-    data.append("colaborador", tipo === "colaborador" ? "1" : "0"); // "advogado" ou "colaborador"
+    data.append("colaborador", tipo === "colaborador" ? "1" : "0");
 
     if (tipo === "advogado") {
-      // 🚀 advogado → navega para próxima etapa (Carteira)
+      // ✅ advogado → próxima etapa
+      setLoading(false);
       navigation.navigate("CadastroCarteira", {
         dados: { nome, cpf, email, nascimento, rg, celular, senha, tipo },
       });
@@ -182,18 +204,7 @@ const onSubmit = async () => {
     }
 
     if (tipo === "colaborador") {
-      // 🚀 colaborador → envia direto
-      if (oab.trim().length < 3) {
-        Alert.alert("Atenção", "Informe um número de OAB válido.");
-        return;
-      }
-
-      data.append("oab", oab);
-
-      for (const [key, value] of (data as any).entries()) {
-     console.log(`${key}:`, value);
-}
-
+      // ✅ colaborador → envia direto
       const headers = (data as any).getHeaders?.() ?? {
         "Content-Type": "multipart/form-data",
       };
@@ -203,32 +214,36 @@ const onSubmit = async () => {
         data,
         { headers }
       );
-      console.log("📦 Dados da resposta:", response.data);
-      setLoading(false);
 
-     if (
-      response.status === 200 &&
-      (response.data?.sucesso || response.data?.ok?.toLowerCase().includes("usuario logado"))
-    ) {
-      Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
-      navigation.navigate("CadastroValidacao");
-    } else {
-      console.log("Resposta inesperada:", response.data);
-      Alert.alert("Atenção", "Houve um problema ao concluir o cadastro.");
-    }
+      console.log("📦 Resposta concluirCadastro:", response.data);
 
+      if (
+        response.status === 200 &&
+        (response.data?.sucesso ||
+          response.data?.ok?.toLowerCase().includes("usuario logado"))
+      ) {
+        Alert.alert("Sucesso", "Cadastro de colaborador concluído!");
+        navigation.navigate("CadastroValidacao");
+      } else {
+        Alert.alert(
+          "Atenção",
+          "Houve um problema ao concluir o cadastro."
+        );
+      }
     }
   } catch (err: any) {
-    console.error("Erro ao enviar cadastro:", err?.response?.data || err);
+    console.error("❌ Erro ao enviar cadastro:", err?.response?.data || err);
     Alert.alert(
       "Erro",
       "Não foi possível concluir o cadastro. Verifique os dados e tente novamente."
     );
+  } finally {
+    setLoading(false); // sempre para o loading no fim
   }
 };
 
 
-return (
+ return (
   <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
     {/* Fundo fixo */}
     <View style={styles.fundoWrapper} pointerEvents="none">
@@ -266,28 +281,25 @@ return (
               placeholder="Digite seu nome"
               value={nome}
               onChangeText={setNome}
-              error={nome.trim().length > 0 && nome.trim().length < 3 ? "Digite o nome completo" : undefined}
+              error={
+                nome.trim().length > 0 && nome.trim().length < 3
+                  ? "Digite o nome completo"
+                  : undefined
+              }
             />
-            {tipo === "colaborador" && (
-              <LabeledInput
-                label="Número da OAB"
-                placeholder="Digite seu número da OAB"
-                value={oab}
-                onChangeText={setOab}
-                keyboardType="numeric"
-                error={oab.trim().length > 0 && oab.trim().length < 3 ? "Número inválido" : undefined}
-              />
-            )}
-             
+
             <LabeledInput
               label="CPF"
               placeholder="Digite seu CPF"
               value={cpf}
-              onChangeText={(t) => { setCpf(maskCPF(t)); if (isValidCPF(t)) setCpfError(undefined); }}
+              onChangeText={(t) => {
+                setCpf(maskCPF(t));
+                if (isValidCPF(t)) setCpfError(undefined);
+              }}
               keyboardType="numeric"
               error={cpfError}
             />
-            
+
             <View style={styles.row}>
               <View style={[styles.col, { marginRight: 8 }]}>
                 <LabeledInput
@@ -305,32 +317,52 @@ return (
                   value={confirma}
                   onChangeText={setConfirma}
                   secureTextEntry
-                  error={confirma.length > 0 && !passwordsMatch ? "Senhas não conferem" : undefined}
+                  error={
+                    confirma.length > 0 && !passwordsMatch
+                      ? "Senhas não conferem"
+                      : undefined
+                  }
                 />
               </View>
             </View>
+
             <LabeledInput label="RG" placeholder="Digite seu RG" value={rg} onChangeText={setRg} />
+
             <LabeledInput
               label="Data de nascimento"
               placeholder="dd/mm/aaaa"
               value={nascimento}
               onChangeText={(t) => setNascimento(maskDate(t))}
               keyboardType="numeric"
-              error={nascimento.length > 0 && nascimento.length < 10 ? "Data inválida" : undefined}
+              error={
+                nascimento.length > 0 && nascimento.length < 10
+                  ? "Data inválida"
+                  : undefined
+              }
             />
+
             <LabeledInput
               label="Celular"
               placeholder="Digite seu número"
               value={celular}
               onChangeText={(t) => setCelular(maskPhoneBR(t))}
               keyboardType="phone-pad"
-              error={onlyDigits(celular).length > 0 && onlyDigits(celular).length < 10 ? "Número inválido" : undefined}
+              error={
+                onlyDigits(celular).length > 0 &&
+                onlyDigits(celular).length < 10
+                  ? "Número inválido"
+                  : undefined
+              }
             />
+
             <LabeledInput
               label="E-mail*"
               placeholder="seuemail@email.com"
               value={email}
-              onChangeText={(t) => { setEmail(t); if (emailRegex.test(t)) setEmailError(undefined); }}
+              onChangeText={(t) => {
+                setEmail(t);
+                if (emailRegex.test(t)) setEmailError(undefined);
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               error={emailError}
@@ -339,26 +371,30 @@ return (
             <View style={styles.lgpdRow}>
               <Checkbox checked={lgpdOk} onToggle={() => setLgpdOk((v) => !v)} />
               <Text style={styles.lgpdText}>
-                Declaro estar ciente da utilização dos Dados na extensão autorizada na Lei Geral de Proteção de Dados – LGPD.
+                Declaro estar ciente da utilização dos Dados na extensão autorizada na Lei Geral de
+                Proteção de Dados – LGPD.
               </Text>
             </View>
 
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={onSubmit}
-            disabled={!canSubmit || loading}
-            style={[styles.button, (!canSubmit || loading) && styles.buttonDisabled]}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>
-                {tipo === "advogado" ? "Avançar" : "Concluir Cadastro"}
-              </Text>
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={onSubmit}
+              disabled={!canSubmit || loading}
+              style={[
+                styles.button,
+                (!canSubmit || loading) && styles.buttonDisabled,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {tipo === "advogado" ? "Avançar" : "Concluir Cadastro"}
+                </Text>
+              )}
+            </TouchableOpacity>
 
-               </ScrollView>
+            </ScrollView>
           </View>
         </View>
       </ScrollView>
@@ -382,7 +418,14 @@ type LabeledInputProps = {
 };
 
 const LabeledInput: React.FC<LabeledInputProps> = ({
-  label, placeholder, value, onChangeText, secureTextEntry, error, keyboardType = "default", autoCapitalize = "sentences"
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry,
+  error,
+  keyboardType = "default",
+  autoCapitalize = "sentences",
 }) => (
   <View style={{ marginBottom: 16 }}>
     <Text style={styles.label}>{label}</Text>
