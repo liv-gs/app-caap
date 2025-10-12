@@ -2,7 +2,7 @@
   "expo": {
     "name": "Caap",
     "slug": "my-app",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png", 
     "userInterfaceStyle": "light",
@@ -27,7 +27,7 @@
         "backgroundColor": "#184184" 
       },
       "package": "com.livgs.myapp" ,
-      "versionCode": 9
+      "versionCode": 10
     },
 
     "web": {

@@ -228,31 +228,35 @@ const FormEnd: React.FC = () => {
               keyboardType="numeric"
             />
 
-            <Text style={styles.label}>Estado*</Text>
+          <Text style={styles.label}>Estado*</Text>
             <View style={styles.pickerWrapper}>
               <Picker
-                selectedValue={estado}
+                selectedValue={estado ?? ""} // força string
                 onValueChange={(value) => setEstado(value)}
+                style={{ color: estado ? "#000" : "#999" }} // placeholder cinza
               >
-                <Picker.Item label="Selecione o estado" value={null} />
+                <Picker.Item label="Selecione o estado" value="" />
                 {ufs.map((u) => (
                   <Picker.Item key={u.id} label={u.nome} value={u.sigla} />
                 ))}
               </Picker>
             </View>
 
+
             <Text style={styles.label}>Cidade*</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={cidade}
-                onValueChange={(value) => setCidade(value)}
-              >
-                <Picker.Item label="Selecione a cidade" value={null} />
-                {cidades.map((c) => (
-                  <Picker.Item key={c.id} label={c.nome} value={c.id} />
-                ))}
-              </Picker>
-            </View>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={cidade?.toString() || ""} // sempre string
+                  onValueChange={(value) => setCidade(Number(value))} // volta pra número
+                  style={{ color: cidade ? "#000" : "#999" }}
+                >
+                  <Picker.Item label="Selecione a cidade" value="" />
+                  {cidades.map((c) => (
+                    <Picker.Item key={c.id} label={c.nome} value={c.id.toString()} />
+                  ))}
+                </Picker>
+              </View>
+
 
             <LabeledInput label="Bairro*" placeholder="Digite seu bairro"value={bairro} onChangeText={setBairro} />
             <LabeledInput label="Logradouro*"   placeholder="Rua, avenida..." value={logradouro} onChangeText={setLogradouro} />
