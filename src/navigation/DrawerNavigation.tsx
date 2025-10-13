@@ -10,6 +10,7 @@ import TabsNavigator from './TabsNavigation';
 import ListaConvenio from '../screens/Convenio';
 import LoginScreen from '../screens/LoginScreen';
 import DadosConvenio from '../screens/DadosConvenio';
+import DadosMedico from '../screens/DadosMedico';
 import Calendar from '../screens/agendamento';
 import DadosService from '../screens/DadosService';
 import Home from '../screens/Home';
@@ -48,6 +49,7 @@ function MainStack() {
     >
       <Stack.Screen name="Tabs" component={TabsNavigator} options={{ headerShown: true }} />
       <Stack.Screen name="DadosService" component={DadosService} options={{ headerShown: true }} />
+      <Stack.Screen name="DadosMedico" component={DadosMedico} options={{ headerShown: true }} />
       <Stack.Screen name="DadosConvenio" component={DadosConvenio} options={{ headerShown: true }} />
       <Stack.Screen name="agendamento" component={Calendar} options={{ headerShown: true }} />
     </Stack.Navigator>

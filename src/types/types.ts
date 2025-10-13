@@ -10,6 +10,7 @@ export type MainStackParamList = {
   Service: undefined;
   Categorias: undefined;
   DadosService: { service: ApiService };
+  DadosMedico: { service: ApiService };
   DadosConvenio: { categoria: string }; // 👈 ajustado aqui
   agendamento: { service: ApiService };
 };

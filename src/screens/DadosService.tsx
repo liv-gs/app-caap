@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,15 +6,15 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Linking,
   useWindowDimensions,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import RenderHTML from "react-native-render-html";
 import type { MainStackParamList } from "../types/types";
+import { Linking } from 'react-native';
 
 type RouteParams = RouteProp<MainStackParamList, "DadosService">;
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -49,44 +49,66 @@ export default function DadosService() {
   const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   const contentBlocks = parseHtmlContent(service.content || "");
 
+  const [profissionais, setProfissionais] = useState<any[]>([]);
+  const [loadingProfissionais, setLoadingProfissionais] = useState(false);
+
+  useEffect(() => {
+    const fetchProfissionais = async () => {
+      try {
+        setLoadingProfissionais(true);
+        const res = await fetch(
+          `https://sites-caapi.mpsip8.easypanel.host/wp-json/caapi/v1/servicos?idpai=${service.id}`
+        );
+        const data = await res.json();
+        setProfissionais(data);
+      } catch (err) {
+        console.log("Erro ao buscar profissionais:", err);
+      } finally {
+        setLoadingProfissionais(false);
+      }
+    };
+
+    fetchProfissionais();
+  }, [service.id]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Título */}
         <Text style={styles.title}>{service.title}</Text>
 
-        {/* Renderiza blocos de texto e imagens */}
-        {contentBlocks.map((block, idx) => {
-          if (block.type === "text") {
-            return (
-              <RenderHTML
-                key={idx}
-                contentWidth={width - 40}
-                source={{ html: block.content }}
-                tagsStyles={{
-                  p: { fontSize: 16, lineHeight: 24, marginBottom: 12, color: "#333" },
-                  h1: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
-                  h2: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-                  h3: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
-                  li: { fontSize: 16, lineHeight: 24, color: "#444", marginBottom: 6 },
-                  strong: { fontWeight: "700" },
-                  em: { fontStyle: "italic" },
-                  a: { color: "#1D75CD", textDecorationLine: "underline" },
-                }}
-              />
-            );
-          } else {
-            return (
-              <Image
-                key={idx}
-                source={{ uri: block.content }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            );
-          }
-        })}
+        {/* Conteúdo HTML */}
+        {contentBlocks.map((block, idx) =>
+          block.type === "text" ? (
+            <RenderHTML
+              key={idx}
+              contentWidth={width - 40}
+              source={{ html: block.content }}
+              tagsStyles={{
+                p: { fontSize: 16, lineHeight: 24, marginBottom: 12, color: "#333" },
+                h1: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
+                h2: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
+                h3: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
+                li: { fontSize: 16, lineHeight: 24, color: "#444", marginBottom: 6 },
+                strong: { fontWeight: "700" },
+                em: { fontStyle: "italic" },
+                a: { color: "#1D75CD", textDecorationLine: "underline" },
+              }}
+            />
+          ) : (
+            <Image
+              key={idx}
+              source={{ uri: block.content }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          )
+        )}
 
-        {/* Dias da semana */}
+        {/* Dias */}
         {service.dias?.length > 0 && (
           <View style={styles.infoBox}>
             <Text style={styles.infoTitle}>Dias disponíveis:</Text>
@@ -100,19 +122,41 @@ export default function DadosService() {
         {service.horarios?.length > 0 && (
           <View style={styles.infoBox}>
             <Text style={styles.infoTitle}>Horários:</Text>
-            <Text style={styles.infoText}>{service.horarios.join(", ")}</Text>
+            <Text style={styles.infoText}>{service.horarios}</Text>
           </View>
         )}
+        {/* Link do serviço */}
+          {service.link && (
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => Linking.openURL(service.link)}
+            >
+              <Text style={styles.linkText}>Abrir site</Text>
+            </TouchableOpacity>
+          )}
 
-        {/* Link */}
-        {service.link && (
-          <TouchableOpacity style={styles.linkButton} onPress={() => Linking.openURL(service.link)}>
-            <Text style={styles.linkText}>Abrir site</Text>
-          </TouchableOpacity>
-        )}
 
-        {/* Botão de Agendamento */}
-       
+        {/* Profissionais */}
+        {loadingProfissionais ? (
+          <ActivityIndicator size="large" color="#10567C" />
+        ) : profissionais.length > 0 ? (
+          <View style={{ marginTop: 20 }}>
+            <Text style={styles.subTitle}>Profissionais disponíveis:</Text>
+
+            {profissionais.map((prof) => (
+              <TouchableOpacity
+                key={prof.id}
+                style={styles.medicoButton}
+                onPress={() =>
+                  navigation.navigate("DadosMedico", { service: prof })
+                }
+              >
+                <Text style={styles.medicoNome}>{prof.titulo}</Text>
+                <Text style={styles.medicoResumo}>{prof.resumo}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
@@ -122,13 +166,38 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#fff", paddingTop: 100 },
   scrollContent: { flexGrow: 1, padding: 20 },
   title: { fontSize: 22, fontWeight: "bold", color: "#0D3B66", marginBottom: 12 },
+  subTitle: { fontSize: 18, fontWeight: "bold", color: "#0D3B66", marginBottom: 12 },
   image: { width: "100%", height: 200, borderRadius: 16, marginVertical: 10 },
   infoBox: { marginBottom: 16 },
   infoTitle: { fontWeight: "600", fontSize: 16, color: "#0D3B66", marginBottom: 4 },
   infoText: { fontSize: 15, color: "#555" },
-  linkButton: { marginBottom: 20, paddingVertical: 12, backgroundColor: "#1D75CD", borderRadius: 10, alignItems: "center" },
-  linkText: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  button: { backgroundColor: "#0D3B66", paddingVertical: 14, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  buttonContent: { flexDirection: "row", alignItems: "center" },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  medicoButton: {
+    backgroundColor: "#0D3B66",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  medicoNome: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 4,
+  },
+  medicoResumo: {
+    fontSize: 14,
+    color: "#E0E0E0",
+  },
+  linkButton: {
+  marginBottom: 20,
+  paddingVertical: 12,
+  backgroundColor: "#1D75CD",
+  borderRadius: 10,
+  alignItems: "center",
+},
+linkText: {
+  color: "#fff",
+  fontWeight: "600",
+  fontSize: 16,
+},
+
 });

@@ -159,6 +159,12 @@ export default function Calendar() {
 
   return (
     <View style={styles.container}>
+      <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
+      <Text style={{ fontSize: 20, fontWeight: '700', color: '#0D3B66' }}>
+        Agendamento: {service.title}
+      </Text>
+    </View>
+
       <RNCalendar
         markedDates={Object.fromEntries(
           Object.keys(events).map((date) => [
@@ -266,7 +272,7 @@ export default function Calendar() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF", paddingTop: 100 },
+  container: { flex: 1, backgroundColor: "#FFF", paddingTop: 120 },
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

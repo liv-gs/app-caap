@@ -17,4 +17,7 @@ export type ApiService = {
   dias: number[]; 
   link?: string;
   content?: string | null;
+  titulo?:string;
+  pai?:string;
+  resumo?:string;
 };
