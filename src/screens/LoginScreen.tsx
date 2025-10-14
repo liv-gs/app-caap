@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 400,
     padding: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.91)",
+    backgroundColor: "rgba(255, 255, 255, 0.86)",
     borderRadius: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
-    backgroundColor: "#eeeeeed2",
+    backgroundColor: "#ffffffd2",
     color:"#000000ff"
   },
   button: {

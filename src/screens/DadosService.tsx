@@ -15,6 +15,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import RenderHTML from "react-native-render-html";
 import type { MainStackParamList } from "../types/types";
 import { Linking } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+
+
 
 type RouteParams = RouteProp<MainStackParamList, "DadosService">;
 type NavigationProp = NativeStackNavigationProp<MainStackParamList>;
@@ -143,18 +146,24 @@ export default function DadosService() {
           <View style={{ marginTop: 20 }}>
             <Text style={styles.subTitle}>Profissionais disponíveis:</Text>
 
-            {profissionais.map((prof) => (
-              <TouchableOpacity
-                key={prof.id}
-                style={styles.medicoButton}
-                onPress={() =>
-                  navigation.navigate("DadosMedico", { service: prof })
-                }
-              >
+          {profissionais.map((prof) => (
+            <TouchableOpacity
+              key={prof.id}
+              style={styles.medicoButton}
+              onPress={() => navigation.navigate("agendamento", { service: prof })}
+            >
+              <View style={{ flex: 1 }}>
                 <Text style={styles.medicoNome}>{prof.titulo}</Text>
                 <Text style={styles.medicoResumo}>{prof.resumo}</Text>
-              </TouchableOpacity>
-            ))}
+              </View>
+
+              <View style={styles.agendarContainer}>
+                <Text style={styles.agendarTexto}>Agendar</Text>
+                <Ionicons name="chevron-forward" size={18} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          ))}
+
           </View>
         ) : null}
       </ScrollView>
@@ -172,21 +181,39 @@ const styles = StyleSheet.create({
   infoTitle: { fontWeight: "600", fontSize: 16, color: "#0D3B66", marginBottom: 4 },
   infoText: { fontSize: 15, color: "#555" },
   medicoButton: {
-    backgroundColor: "#0D3B66",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  medicoNome: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#fff",
-    marginBottom: 4,
-  },
-  medicoResumo: {
-    fontSize: 14,
-    color: "#E0E0E0",
-  },
+  backgroundColor: "#0D3B66",
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 12,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+medicoNome: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#fff",
+  marginBottom: 4,
+},
+
+medicoResumo: {
+  fontSize: 14,
+  color: "#E0E0E0",
+},
+
+agendarContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 4, // afasta um pouquinho o texto da seta
+},
+
+agendarTexto: {
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: "500",
+},
+
   linkButton: {
   marginBottom: 20,
   paddingVertical: 12,
@@ -198,6 +225,22 @@ linkText: {
   color: "#fff",
   fontWeight: "600",
   fontSize: 16,
+},
+medicoCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  backgroundColor: "#fff",
+  padding: 12,
+  marginVertical: 6,
+  borderRadius: 10,
+  elevation: 2,
+},
+agendarButton: {
+  backgroundColor: "#184E77",
+  paddingVertical: 6,
+  paddingHorizontal: 12,
+  borderRadius: 8,
 },
 
 });
