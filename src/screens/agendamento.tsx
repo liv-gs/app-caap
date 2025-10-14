@@ -8,11 +8,55 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
-import { Calendar as RNCalendar } from "react-native-calendars";
+import { Calendar as RNCalendar, LocaleConfig } from "react-native-calendars";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { normalizeService } from "../context/normalizeService";
 import type { MainStackParamList } from "../types/types";
 import { useAuth } from "../context/AuthContext";
+
+// 🗓️ Configuração do calendário em português
+LocaleConfig.locales["pt-br"] = {
+  monthNames: [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ],
+  monthNamesShort: [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+  ],
+  dayNames: [
+    "Domingo",
+    "Segunda-feira",
+    "Terça-feira",
+    "Quarta-feira",
+    "Quinta-feira",
+    "Sexta-feira",
+    "Sábado",
+  ],
+  dayNamesShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+  today: "Hoje",
+};
+LocaleConfig.defaultLocale = "pt-br";
 
 type RouteParams = RouteProp<MainStackParamList, "agendamento">;
 
@@ -29,7 +73,11 @@ export default function Calendar() {
   const horariosDisponiveis = service.horarios || [];
   const diasPermitidos = service.dias || [];
 
-  // Converte YYYY-MM-DD para Date local
+  // Data mínima = hoje
+  const hoje = new Date();
+  const minDate = hoje.toISOString().split("T")[0];
+
+  // Converte "YYYY-MM-DD" em objeto Date local
   function parseDateLocal(dateString: string) {
     const [year, month, day] = dateString.split("-").map(Number);
     return new Date(year, month - 1, day);
@@ -57,15 +105,21 @@ export default function Calendar() {
       const formatted: Record<string, any> = {};
 
       data.forEach((ag: any) => {
-        const key = ag.data_iso;
-        const horariosExistentes = formatted[key]?.horarios ?? [];
-        formatted[key] = {
-          horarios: [...horariosExistentes, ag.hora],
-          ocupado: false,
-        };
+        const partes = ag.data.split("-");
+        if (partes.length === 3) {
+          const [dia, mes, ano] = partes.map(Number);
+          const key = `${ano}-${String(mes).padStart(2, "0")}-${String(
+            dia
+          ).padStart(2, "0")}`;
+          const horariosExistentes = formatted[key]?.horarios ?? [];
+          formatted[key] = {
+            horarios: [...horariosExistentes, ag.hora],
+            ocupado: false,
+          };
+        }
       });
 
-      // Marca o dia como ocupado se todos os horários estiverem preenchidos (para diária)
+      // Marca dia como ocupado se todos os horários estiverem preenchidos
       Object.keys(formatted).forEach((key) => {
         const totalHorarios = horariosDisponiveis.length;
         formatted[key].ocupado =
@@ -86,8 +140,8 @@ export default function Calendar() {
       dia.getMonth() + 1
     ).padStart(2, "0")}-${dia.getFullYear()}`;
 
-    // Validação antes de enviar
     const key = formatKey(selectedDate);
+
     if (!service.diaria && selectedHorario) {
       const ocupado =
         events[key]?.horarios.includes(selectedHorario) || false;
@@ -157,24 +211,77 @@ export default function Calendar() {
     buscarAgendamentos();
   }, []);
 
+  // 🟢 Gera marcações do calendário
+const markedDates = Object.fromEntries(
+  Array.from({ length: 60 }).map((_, i) => {
+    const data = new Date();
+    data.setDate(hoje.getDate() + i);
+    const key = data.toISOString().split("T")[0];
+    const diaSemana = data.getDay();
+
+    const permitido = diasPermitidos.includes(diaSemana);
+    const evento = events[key];
+    let dotColor = undefined;
+    let marked = false;
+
+    if (permitido) {
+      const totalHorarios = horariosDisponiveis.length;
+      const ocupados = evento?.horarios.length || 0;
+
+      if (ocupados === totalHorarios && totalHorarios > 0) {
+        // 🔴 todos horários ocupados
+        dotColor = "#FF6B6B";
+        marked = true;
+      } else {
+        // 🟢 dia atendido (mesmo se ninguém agendou ainda)
+        dotColor = "#4CAF50";
+        marked = true;
+      }
+    }
+
+    return [
+      key,
+      {
+        marked,
+        dotColor,
+      },
+    ];
+  })
+);
+
+
+
+
   return (
     <View style={styles.container}>
       <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
-      <Text style={{ fontSize: 20, fontWeight: '700', color: '#0D3B66' }}>
-        Agendamento: {service.title}
-      </Text>
-    </View>
+        <Text style={{ fontSize: 20, fontWeight: "700", color: "#0D3B66" }}>
+          Agendamento: {service.title}
+        </Text>
 
-      <RNCalendar
-        markedDates={Object.fromEntries(
-          Object.keys(events).map((date) => [
-            date,
-            {
-              marked: true,
-              dotColor: events[date].ocupado ? "red" : "green",
-            },
-          ])
+        {/* 🕓 Informações de disponibilidade */}
+        <Text style={{ marginTop: 6, color: "#555", fontSize: 15 }}>
+          Dias disponíveis:{" "}
+          {diasPermitidos
+            .map(
+              (d) =>
+                ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][
+                  d
+                ]
+            )
+            .join(", ")}
+        </Text>
+        {!service.diaria && (
+          <Text style={{ color: "#555", fontSize: 15 }}>
+            Horários: {horariosDisponiveis.join(", ")}
+          </Text>
         )}
+      </View>
+
+      {/* 🗓️ Calendário */}
+      <RNCalendar
+        minDate={minDate}
+        markedDates={markedDates}
         onDayPress={async (day) => {
           const date = parseDateLocal(day.dateString);
           const diaSemana = date.getDay();
@@ -189,7 +296,6 @@ export default function Calendar() {
 
           await buscarAgendamentos();
 
-          // Bloquear dia se diária já ocupada
           if (service.diaria && events[day.dateString]?.ocupado) {
             Alert.alert("Indisponível", "Este dia já foi reservado.");
             return;
@@ -199,19 +305,34 @@ export default function Calendar() {
           setSelectedHorario(service.diaria ? "DIARIA" : null);
           setConfirmVisible(true);
         }}
+        theme={{
+          textMonthFontWeight: "700",
+          todayTextColor: "#0D3B66",
+          arrowColor: "#0D3B66",
+        }}
       />
+      <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 10 }}>
+          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#4CAF50", marginRight: 6 }} />
+          <Text style={{ color: "#555" }}>Possui horários disponíveis</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 10 }}>
+          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#FF6B6B", marginRight: 6 }} />
+          <Text style={{ color: "#555" }}>Totalmente ocupado</Text>
+        </View>
+      </View>
 
-      {/* Modal de confirmação */}
+
+      {/* 💬 Modal de confirmação */}
       <Modal visible={confirmVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Confirmar agendamento</Text>
             <Text style={styles.dateText}>
-              {selectedDate?.toLocaleDateString()}
+              {selectedDate?.toLocaleDateString("pt-BR")}
               {!service.diaria && selectedHorario ? ` às ${selectedHorario}` : ""}
             </Text>
 
-            {/* Horários para serviços não-diária */}
             {!service.diaria && selectedDate && (
               <FlatList
                 data={horariosDisponiveis}
@@ -222,28 +343,29 @@ export default function Calendar() {
                     false;
 
                   return (
-                   <TouchableOpacity
-                    style={[
-                      styles.horarioBtn,
-                      ocupado ? styles.horarioBtnDisabled : styles.horarioBtnAvailable,
-                      selectedHorario === item && {
-                        borderColor: "#0D3B66",
-                        borderWidth: 2,
-                      },
-                    ]}
-                    disabled={ocupado}
-                    onPress={() => setSelectedHorario(item)}
-                  >
-                    <Text
+                    <TouchableOpacity
                       style={[
-                        styles.horarioBtnText,
-                        ocupado && { color: "#999" }, // cor mais apagada pro ocupado
+                        styles.horarioBtn,
+                        ocupado
+                          ? styles.horarioBtnDisabled
+                          : styles.horarioBtnAvailable,
+                        selectedHorario === item && {
+                          borderColor: "#0D3B66",
+                          borderWidth: 2,
+                        },
                       ]}
+                      disabled={ocupado}
+                      onPress={() => setSelectedHorario(item)}
                     >
-                      {item}
-                    </Text>
-                  </TouchableOpacity>
-
+                      <Text
+                        style={[
+                          styles.horarioBtnText,
+                          ocupado && { color: "#C0392B", fontWeight: "700" },
+                        ]}
+                      >
+                        {item}
+                      </Text>
+                    </TouchableOpacity>
                   );
                 }}
               />
@@ -312,8 +434,14 @@ const styles = StyleSheet.create({
     borderColor: "#E6E6E6",
   },
   horarioBtnText: { fontSize: 16, fontWeight: "600", color: "#0D3B66" },
-  horarioBtnAvailable: { backgroundColor: "#E8F6F3", borderColor: "#A8E6CF" },
-  horarioBtnDisabled: { backgroundColor: "#F3F3F3", borderColor: "#DDD" },
+  horarioBtnAvailable: {
+    backgroundColor: "#E8F6F3",
+    borderColor: "#A8E6CF",
+  },
+  horarioBtnDisabled: {
+    backgroundColor: "#FFE0E0",
+    borderColor: "#FF6B6B",
+  },
   confirmBtn: {
     backgroundColor: "#0D3B66",
     paddingVertical: 14,
