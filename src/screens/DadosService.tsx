@@ -128,8 +128,8 @@ export default function DadosService() {
             <Text style={styles.infoText}>{service.horarios}</Text>
           </View>
         )}
-        {/* Link do serviço */}
-          {service.link && (
+        {/* Link do serviço — só aparece se não tiver agendamento */}
+          {service.link && !service.diaria && profissionais.length === 0 && (
             <TouchableOpacity
               style={styles.linkButton}
               onPress={() => Linking.openURL(service.link)}
@@ -166,8 +166,20 @@ export default function DadosService() {
 
           </View>
         ) : null}
-      </ScrollView>
-    </SafeAreaView>
+
+          {/* Botão "Ir para o agendamento" — aparece apenas se o serviço tiver diária */}
+          {service.diaria === true && (
+            <TouchableOpacity
+              style={styles.irAgendamentoButton}
+              onPress={() => navigation.navigate("agendamento", { service })}
+            >
+              <Text style={styles.irAgendamentoText}>Ir para o agendamento</Text>
+              <Ionicons name="chevron-forward" size={18} color="#fff" />
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+
   );
 }
 
@@ -242,5 +254,21 @@ agendarButton: {
   paddingHorizontal: 12,
   borderRadius: 8,
 },
+irAgendamentoButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#0D3B66",
+  paddingVertical: 14,
+  borderRadius: 12,
+  marginTop: 16,
+  gap: 6,
+},
+irAgendamentoText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "600",
+},
+
 
 });

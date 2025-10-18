@@ -69,6 +69,7 @@ export default function Calendar() {
   const [selectedHorario, setSelectedHorario] = useState<string | null>(null);
   const [events, setEvents] = useState<Record<string, any>>({});
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [diasSelecionados, setDiasSelecionados] = useState<string[]>([]);
 
   const horariosDisponiveis = service.horarios || [];
   const diasPermitidos = service.dias || [];
@@ -211,8 +212,17 @@ export default function Calendar() {
     buscarAgendamentos();
   }, []);
 
+  
+
   // 🟢 Gera marcações do calendário
-const markedDates = Object.fromEntries(
+  type MarkedDate = {
+  marked?: boolean;
+  dotColor?: string;
+  selected?: boolean;
+  selectedColor?: string;
+};
+
+const markedDates: Record<string, MarkedDate> = Object.fromEntries(
   Array.from({ length: 60 }).map((_, i) => {
     const data = new Date();
     data.setDate(hoje.getDate() + i);
@@ -225,29 +235,39 @@ const markedDates = Object.fromEntries(
     let marked = false;
 
     if (permitido) {
-      const totalHorarios = horariosDisponiveis.length;
-      const ocupados = evento?.horarios.length || 0;
-
-      if (ocupados === totalHorarios && totalHorarios > 0) {
-        // 🔴 todos horários ocupados
-        dotColor = "#FF6B6B";
-        marked = true;
+      if (service.diaria) {
+        dotColor = evento?.ocupado ? "#FF6B6B" : "#4CAF50";
       } else {
-        // 🟢 dia atendido (mesmo se ninguém agendou ainda)
-        dotColor = "#4CAF50";
-        marked = true;
+        const totalHorarios = horariosDisponiveis.length;
+        const ocupados = evento?.horarios.length || 0;
+        dotColor =
+          ocupados === totalHorarios && totalHorarios > 0
+            ? "#FF6B6B"
+            : "#4CAF50";
       }
+      marked = true;
     }
 
-    return [
-      key,
-      {
-        marked,
-        dotColor,
-      },
-    ];
+    return [key, { marked, dotColor }];
   })
 );
+
+      if (service.diaria && diasSelecionados.length > 0) {
+        diasSelecionados.forEach((d) => {
+          if (markedDates[d]) {
+            markedDates[d].selected = true;
+            markedDates[d].selectedColor = "#1D75CD";
+          } else {
+            // caso o dia ainda não esteja no array de 60 dias
+            markedDates[d] = {
+              selected: true,
+              selectedColor: "#1D75CD",
+            };
+          }
+        });
+      }
+
+
 
 
 
@@ -287,30 +307,55 @@ const markedDates = Object.fromEntries(
           const diaSemana = date.getDay();
 
           if (!diasPermitidos.includes(diaSemana)) {
-            Alert.alert(
-              "Indisponível",
-              "Este dia não está disponível para agendamento."
-            );
+            Alert.alert("Indisponível", "Este dia não está disponível para agendamento.");
             return;
           }
 
           await buscarAgendamentos();
 
+          // 🔴 Se for diária e o dia já estiver ocupado, bloqueia
           if (service.diaria && events[day.dateString]?.ocupado) {
             Alert.alert("Indisponível", "Este dia já foi reservado.");
             return;
           }
 
-          setSelectedDate(date);
-          setSelectedHorario(service.diaria ? "DIARIA" : null);
-          setConfirmVisible(true);
+          // 🟢 Se for diária, acumula dias
+          if (service.diaria) {
+            setDiasSelecionados((prev) => {
+              // Evita duplicatas
+              if (prev.includes(day.dateString)) return prev;
+              return [...prev, day.dateString];
+            });
+            setSelectedDate(date);
+            setConfirmVisible(true);
+          } else {
+            // fluxo normal (por horário)
+            setSelectedDate(date);
+            setSelectedHorario(null);
+            setConfirmVisible(true);
+          }
         }}
+
         theme={{
           textMonthFontWeight: "700",
           todayTextColor: "#0D3B66",
           arrowColor: "#0D3B66",
         }}
       />
+     {service.diaria ? (
+      // 🟢 Legenda para serviços diários
+      <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 10 }}>
+          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#4CAF50", marginRight: 6 }} />
+          <Text style={{ color: "#555" }}>Dias disponíveis</Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 10 }}>
+          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#FF6B6B", marginRight: 6 }} />
+          <Text style={{ color: "#555" }}>Dias ocupados</Text>
+        </View>
+      </View>
+    ) : (
+      // 🕓 Legenda para serviços com horários
       <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 20 }}>
         <View style={{ flexDirection: "row", alignItems: "center", marginHorizontal: 10 }}>
           <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: "#4CAF50", marginRight: 6 }} />
@@ -321,65 +366,148 @@ const markedDates = Object.fromEntries(
           <Text style={{ color: "#555" }}>Totalmente ocupado</Text>
         </View>
       </View>
+    )}
+
 
 
       {/* 💬 Modal de confirmação */}
       <Modal visible={confirmVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirmar agendamento</Text>
-            <Text style={styles.dateText}>
-              {selectedDate?.toLocaleDateString("pt-BR")}
-              {!service.diaria && selectedHorario ? ` às ${selectedHorario}` : ""}
-            </Text>
+            <Text style={styles.modalTitle}>
+                {service.diaria ? "Selecionar dias" : "Confirmar agendamento"}
+              </Text>
 
-            {!service.diaria && selectedDate && (
-              <FlatList
-                data={horariosDisponiveis}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => {
-                  const ocupado =
-                    events[formatKey(selectedDate!)]?.horarios.includes(item) ||
-                    false;
-
-                  return (
-                    <TouchableOpacity
-                      style={[
-                        styles.horarioBtn,
-                        ocupado
-                          ? styles.horarioBtnDisabled
-                          : styles.horarioBtnAvailable,
-                        selectedHorario === item && {
-                          borderColor: "#0D3B66",
-                          borderWidth: 2,
-                        },
-                      ]}
-                      disabled={ocupado}
-                      onPress={() => setSelectedHorario(item)}
-                    >
-                      <Text
-                        style={[
-                          styles.horarioBtnText,
-                          ocupado && { color: "#C0392B", fontWeight: "700" },
-                        ]}
-                      >
-                        {item}
+              {service.diaria ? (
+                <>
+                  {/* Lista os dias selecionados */}
+                  {diasSelecionados.length > 0 ? (
+                    diasSelecionados.map((d) => (
+                      <Text key={d} style={styles.dateText}>
+                        {new Date(d).toLocaleDateString("pt-BR")}
                       </Text>
+                    ))
+                  ) : (
+                    <Text style={styles.dateText}>Nenhum dia selecionado</Text>
+                  )}
+
+                  {/* Botão para adicionar outro dia */}
+                  <TouchableOpacity
+                    style={[styles.confirmBtn, { backgroundColor: "#1D75CD" }]}
+                    onPress={() => {
+                      setConfirmVisible(false);
+                      Alert.alert("Selecione outro dia no calendário.");
+                    }}
+                  >
+                    <Text style={styles.confirmBtnText}>Adicionar mais dias</Text>
+                  </TouchableOpacity>
+
+                  {/* Botão para confirmar todos os dias */}
+                  {diasSelecionados.length > 0 && (
+                    <TouchableOpacity
+                      onPress={async () => {
+                        try {
+                          for (const d of diasSelecionados) {
+                            const diaObj = parseDateLocal(d);
+                            const dataFormatada = `${String(diaObj.getDate()).padStart(2, "0")}-${String(
+                              diaObj.getMonth() + 1
+                            ).padStart(2, "0")}-${diaObj.getFullYear()}`;
+
+                            const payload = {
+                              data: dataFormatada,
+                              hora: "DIARIA",
+                              usuario,
+                              servico_id: service.id,
+                            };
+
+                            const res = await fetch(
+                              "https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/cadastrar",
+                              {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  Authorization:
+                                    "Basic YXBpYXBwOkw2SkcgMmtoTSBLamk5IHA3WUwgbHY0MiBMQXdM",
+                                },
+                                body: JSON.stringify(payload),
+                              }
+                            );
+
+                            if (!res.ok) {
+                              const errText = await res.text();
+                              console.error("Erro ao agendar:", errText);
+                            }
+                          }
+
+                          Alert.alert("Sucesso", "Dias confirmados com sucesso!");
+                          setDiasSelecionados([]);
+                          setConfirmVisible(false);
+                          await buscarAgendamentos();
+                        } catch (e) {
+                          Alert.alert("Erro", "Não foi possível confirmar os dias.");
+                        }
+                      }}
+                      style={styles.confirmBtn}
+                    >
+                      <Text style={styles.confirmBtnText}>Confirmar</Text>
                     </TouchableOpacity>
-                  );
-                }}
-              />
-            )}
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* fluxo normal de horários */}
+                  <Text style={styles.dateText}>
+                    {selectedDate?.toLocaleDateString("pt-BR")}
+                    {selectedHorario ? ` às ${selectedHorario}` : ""}
+                  </Text>
 
-            {selectedDate && (service.diaria || selectedHorario) && (
-              <TouchableOpacity
-                onPress={confirmarAgendamento}
-                style={styles.confirmBtn}
-              >
-                <Text style={styles.confirmBtnText}>Confirmar</Text>
-              </TouchableOpacity>
-            )}
+                  {!service.diaria && selectedDate && (
+                    <FlatList
+                      data={horariosDisponiveis}
+                      keyExtractor={(item) => item}
+                      renderItem={({ item }) => {
+                        const ocupado =
+                          events[formatKey(selectedDate!)]?.horarios.includes(item) || false;
 
+                        return (
+                          <TouchableOpacity
+                            style={[
+                              styles.horarioBtn,
+                              ocupado
+                                ? styles.horarioBtnDisabled
+                                : styles.horarioBtnAvailable,
+                              selectedHorario === item && {
+                                borderColor: "#0D3B66",
+                                borderWidth: 2,
+                              },
+                            ]}
+                            disabled={ocupado}
+                            onPress={() => setSelectedHorario(item)}
+                          >
+                            <Text
+                              style={[
+                                styles.horarioBtnText,
+                                ocupado && { color: "#C0392B", fontWeight: "700" },
+                              ]}
+                            >
+                              {item}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                    />
+                  )}
+
+                  {selectedDate && selectedHorario && (
+                    <TouchableOpacity
+                      onPress={confirmarAgendamento}
+                      style={styles.confirmBtn}
+                    >
+                      <Text style={styles.confirmBtnText}>Confirmar</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              )}
             <TouchableOpacity
               onPress={() => setConfirmVisible(false)}
               style={styles.cancelBtn}
