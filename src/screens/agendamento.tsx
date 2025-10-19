@@ -13,6 +13,9 @@ import { useRoute, RouteProp } from "@react-navigation/native";
 import { normalizeService } from "../context/normalizeService";
 import type { MainStackParamList } from "../types/types";
 import { useAuth } from "../context/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+
 
 // 🗓️ Configuração do calendário em português
 LocaleConfig.locales["pt-br"] = {
@@ -61,6 +64,7 @@ LocaleConfig.defaultLocale = "pt-br";
 type RouteParams = RouteProp<MainStackParamList, "agendamento">;
 
 export default function Calendar() {
+  const navigation = useNavigation();
   const route = useRoute<RouteParams>();
   const { usuario } = useAuth();
   const service = normalizeService(route.params.service);
@@ -274,6 +278,14 @@ const markedDates: Record<string, MarkedDate> = Object.fromEntries(
 
   return (
     <View style={styles.container}>
+      {/* Botão de Voltar */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#0D3B66" />
+        </TouchableOpacity>
+
       <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
         <Text style={{ fontSize: 20, fontWeight: "700", color: "#0D3B66" }}>
           Agendamento: {service.title}
@@ -522,7 +534,16 @@ const markedDates: Record<string, MarkedDate> = Object.fromEntries(
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF", paddingTop: 120 },
+  container: { flex: 1, backgroundColor: "#FFF", paddingTop: 150 },
+
+  backButton: {
+  left: 20,
+  zIndex: 10,
+  bottom:20,
+  backgroundColor: "rgba(255,255,255,0.9)",
+ 
+},
+
   modalOverlay: {
     flex: 1,
     justifyContent: "center",

@@ -163,10 +163,10 @@ export default function DadosConvenio() {
       </View>
     </View>
   );
-
-  return (
-    <View style={styles.container}>
-      {/* 🔹 Header */}
+return (
+  <View style={styles.container}>
+    {/* 🔹 Header + Filtro juntos */}
+    <View style={styles.topContainer}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Feather name="arrow-left" size={24} color="#0D3B66" />
@@ -193,86 +193,97 @@ export default function DadosConvenio() {
           }}
         />
       </View>
-
-      {/* 🔹 Lista */}
-      <FlatList
-        data={data}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        onEndReached={fetchConvenios}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          loading ? <ActivityIndicator size="small" color="#0D3B66" /> : null
-        }
-      />
-
-      {/* 🔹 Modal com detalhes */}
-      <Modal
-        visible={!!selectedConvenio}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setSelectedConvenio(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <AppText style={styles.modalTitle}>
-              {selectedConvenio?.title}
-            </AppText>
-            <AppText style={styles.modalDescricao}>
-              {selectedConvenio?.content.replace(/<[^>]*>/g, "")}
-            </AppText>
-
-            {selectedConvenio?.cidade?.length > 0 && (
-              <View style={styles.badgeContainer}>
-                {selectedConvenio.cidade.map((cidade) => (
-                  <AppText key={cidade} style={styles.badge}>
-                    📍 {cidade}
-                  </AppText>
-                ))}
-              </View>
-            )}
-
-            {selectedConvenio?.categoria?.length > 0 && (
-              <View style={styles.badgeContainer}>
-                {selectedConvenio.categoria.map((cat) => (
-                  <AppText key={cat} style={styles.badge}>
-                    🏷️ {cat}
-                  </AppText>
-                ))}
-              </View>
-            )}
-
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setSelectedConvenio(null)}
-            >
-              <AppText style={{ color: "#fff", fontWeight: "bold" }}>
-                Fechar
-              </AppText>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </View>
-  );
+
+    {/* 🔹 Lista */}
+    <FlatList
+      data={data}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderItem}
+      contentContainerStyle={{ paddingBottom: 20 }}
+      onEndReached={fetchConvenios}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={
+        loading ? <ActivityIndicator size="small" color="#0D3B66" /> : null
+      }
+    />
+
+    {/* 🔹 Modal com detalhes */}
+    <Modal
+      visible={!!selectedConvenio}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setSelectedConvenio(null)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <AppText style={styles.modalTitle}>
+            {selectedConvenio?.title}
+          </AppText>
+          <AppText style={styles.modalDescricao}>
+            {selectedConvenio?.content.replace(/<[^>]*>/g, "")}
+          </AppText>
+
+          {selectedConvenio?.cidade?.length > 0 && (
+            <View style={styles.badgeContainer}>
+              {selectedConvenio.cidade.map((cidade) => (
+                <AppText key={cidade} style={styles.badge}>
+                  📍 {cidade}
+                </AppText>
+              ))}
+            </View>
+          )}
+
+          {selectedConvenio?.categoria?.length > 0 && (
+            <View style={styles.badgeContainer}>
+              {selectedConvenio.categoria.map((cat) => (
+                <AppText key={cat} style={styles.badge}>
+                  🏷️ {cat}
+                </AppText>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.modalButton}
+            onPress={() => setSelectedConvenio(null)}
+          >
+            <AppText style={{ color: "#fff", fontWeight: "bold" }}>
+              Fechar
+            </AppText>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  </View>
+);
+
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 80,
     flex: 1,
-    paddingHorizontal: 20,
     backgroundColor: "#e1e1e167",
+    paddingHorizontal: 20,
+  },
+  topContainer: {
+    paddingTop: 130, 
+    marginBottom: 12,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
     gap: 16,
+    marginBottom: 10,
   },
-  headerTitle: { fontSize: 20, fontWeight: "600", color: "#0D3B66" },
-
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#0D3B66",
+  },
+  filtro: {
+    marginBottom: 12,
+  },
   card: {
     flexDirection: "row",
     backgroundColor: "#fff",
@@ -324,9 +335,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
 
-  filtro: {
-    marginBottom: 12,
-  },
   dropdown: {
     height: 50,
     borderWidth: 1,

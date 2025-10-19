@@ -16,10 +16,15 @@ import { useAuth } from "../context/AuthContext";
 import { Feather } from "@expo/vector-icons";
 import { getHash, getUsuarioLogado } from "../api/api";
 import { ActivityIndicator } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+
 
 const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
 
 export default function EditarDados() {
+  const navigation = useNavigation();
+
   const { usuario, setUsuario } = useAuth();
 
   const [nome, setNome] = useState(usuario?.nomeLogado || "");
@@ -273,6 +278,14 @@ export default function EditarDados() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
+      {/* Botão de Voltar */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#0D3B66" />
+        </TouchableOpacity>
+
       <View style={{ paddingTop: 50, paddingBottom: 10 }}>
         <AppText style={styles.title}>Editar Dados</AppText>
       </View>
@@ -454,4 +467,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#ccc",
   },
+  backButton: {
+  position: "absolute",
+  top: 50, // ajuste conforme o espaçamento da SafeArea
+  left: 20,
+  zIndex: 10,
+  padding: 6,
+
+},
+
 });

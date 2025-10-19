@@ -76,13 +76,19 @@ export default function DadosService() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+    {/* Botão de Voltar */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#0D3B66" />
+           <Text style={styles.title}>{service.title}</Text>
+        </TouchableOpacity>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Título */}
-        <Text style={styles.title}>{service.title}</Text>
-
         {/* Conteúdo HTML */}
         {contentBlocks.map((block, idx) =>
           block.type === "text" ? (
@@ -184,9 +190,8 @@ export default function DadosService() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff", paddingTop: 100 },
+  safeArea: { flex: 1, backgroundColor: "#fff", paddingTop: 130 },
   scrollContent: { flexGrow: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: "bold", color: "#0D3B66", marginBottom: 12 },
   subTitle: { fontSize: 18, fontWeight: "bold", color: "#0D3B66", marginBottom: 12 },
   image: { width: "100%", height: 200, borderRadius: 16, marginVertical: 10 },
   infoBox: { marginBottom: 16 },
@@ -269,6 +274,23 @@ irAgendamentoText: {
   fontSize: 16,
   fontWeight: "600",
 },
+backButton: {
+  position: "absolute",
+  top: 120, // ajuste conforme necessário
+  left: 20,
+  zIndex: 10,
+  flexDirection: "row", // 🔹 seta e texto lado a lado
+  alignItems: "center",
+  gap: 8, // 🔹 espaço entre ícone e texto (funciona no RN 0.71+)
+  // opcional:
+  // backgroundColor: "transparent",
+  // paddingVertical: 4,
+},
 
+title: {
+  fontSize: 18,
+  fontWeight: "600",
+  color: "#0D3B66",
+},
 
 });
