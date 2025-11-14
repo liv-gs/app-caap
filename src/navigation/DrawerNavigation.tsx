@@ -57,7 +57,7 @@ function MainStack() {
       <Stack.Screen name="DadosConvenio" component={DadosConvenio} options={{ headerShown: true }} />
       <Stack.Screen name="agendamento" component={Calendar} options={{ headerShown: true }} />
     
-      <Stack.Screen name="CadastroDependente" component={CadastroDependente} options={{ headerShown: true }} />
+      <Stack.Screen name="CadastroDependente" component={CadastroDependente} options={{ headerShown: false }} />
 
     </Stack.Navigator>
   );

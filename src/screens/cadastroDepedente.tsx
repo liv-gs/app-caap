@@ -12,6 +12,8 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import { getHash, getUsuarioLogado } from "../api/api";
+import AppText from "../components/AppText";
+
 
 export default function CadastroDependente() {
   const navigation = useNavigation<any>();
@@ -44,7 +46,7 @@ const maskPhone = (v: string) => {
   const [hash, setHash] = useState<string | null>(null);
   const [idUsuario, setIdUsuario] = useState<number | null>(null);
 
-  // Carregar sessão igual outras telas
+
   useEffect(() => {
     const carregarSessao = async () => {
       const savedHash = await getHash();
@@ -119,17 +121,18 @@ const maskPhone = (v: string) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Ionicons name="arrow-back" size={26} color="#0D3B66" />
-      </TouchableOpacity>
-
-      <Text style={styles.title}>Dados do Dependente</Text>
-
+      <View  style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.navigate("ListarDependente")}>
+            <Ionicons name="arrow-back" size={26} color="#0D3B66" />
+          </TouchableOpacity>
+          <AppText style={styles.title}>Dados do Dependente</AppText>
+      </View>
+    
       <View style={styles.card}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <TextInput
             style={styles.input}
-            placeholder="Nome"
+            placeholder="Nome Completo"
             value={nome}
             onChangeText={setNome}
           />
@@ -152,7 +155,7 @@ const maskPhone = (v: string) => {
 
           <TextInput
             style={styles.input}
-            placeholder="Data de Nascimento"
+            placeholder="Data de nascimento"
             keyboardType="numeric"
             value={dataNascimento}
             onChangeText={(t) => setDataNascimento(maskDate(t))}
@@ -172,35 +175,56 @@ const maskPhone = (v: string) => {
       <TouchableOpacity style={styles.saveButton} onPress={salvar}>
         <Text style={styles.saveText}>Salvar</Text>
       </TouchableOpacity>
+       <View style={styles.avisoCard}>
+          <Text style={styles.avisoText}>
+            Para o dependente realizar o primeiro acesso ao App, basta utilizar o CPF como login e senha.
+          </Text>
+      </View>
+
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 100, backgroundColor: "#fff" },
-  title: { fontSize: 26, fontWeight: "bold", marginBottom: 20 },
+  container: { flex: 1, padding: 20, paddingTop: 100, backgroundColor: "#E5E7EB" },
+  title: { fontSize: 20, fontWeight: "500", marginBottom: 20 },
   card: {
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
     maxHeight: 330,
+    elevation:5
+  },
+    header: {
+    flexDirection: "row",
+    gap: 16,
+    marginBottom: 10,
   },
   input: {
     backgroundColor: "#fff",
     borderRadius: 8,
     padding: 14,
     marginBottom: 12,
-    fontSize: 16,
+    fontSize: 13,
     borderWidth: 1,
     borderColor: "#ddd",
+    color:"#2d2d2dff"
   },
   saveButton: {
-    backgroundColor: "#0D6EFD",
-    padding: 16,
+    backgroundColor: "#0D3B66",
+    padding: 14,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 20,
   },
   saveText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+   avisoCard: {
+    backgroundColor: "#FFF3CD",
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FFEEA8",
+  },
+  avisoText: { color: "#715C00", fontSize: 14, textAlign: "center" },
 });

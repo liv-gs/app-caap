@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
-
+import AppText from "../components/AppText";
 // 🔵 IMPORTA A SESSÃO
 import { getHash, getUsuarioLogado } from "../api/api";
 
@@ -100,11 +100,15 @@ export default function ListarDepedente() {
   return (
     <View style={styles.container}>
       {/* BOTÃO VOLTAR */}
-      <TouchableOpacity style={styles.backButton} onPress={irParaHome}>
+
+    <View style={styles.header}>
+      <TouchableOpacity onPress={irParaHome}>
         <Ionicons name="arrow-back" size={26} color="#0D3B66" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Dependentes</Text>
+      <AppText style={styles.title}>Dependentes</AppText>
+    </View>
+
 
       {/* LOADING ENQUANTO CARREGA SESSÃO OU API */}
       {loading ? (
@@ -116,11 +120,11 @@ export default function ListarDepedente() {
           {dependentes.length > 0 ? (
             dependentes.map((dep) => (
               <View key={dep.id} style={styles.card}>
-                <Text style={styles.cardTitle}>{dep.nome}</Text>
-                <Text style={styles.cardText}>CPF: {dep.cpf}</Text>
-               <Text style={styles.cardText}>
+                <AppText style={styles.cardTitle}>{dep.nome}</AppText>
+                <AppText style={styles.cardText}>CPF: {dep.cpf}</AppText>
+               <AppText style={styles.cardText}>
                 Validade: {formatarData(dep.validadeCarteira)}
-              </Text>
+              </AppText>
 
               </View>
             ))
@@ -140,7 +144,7 @@ export default function ListarDepedente() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 50, backgroundColor: "#fff" },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 50, backgroundColor: "#E5E7EB" },
   backButton: {
     position: "absolute",
     left: 20,
@@ -149,28 +153,35 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   title: {
-    fontSize: 26,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "500",
     color: "#333",
     marginTop: 10,
-    marginBottom: 20,
-    alignSelf: "center",
+    marginBottom: 15,
+    alignSelf: "auto",
   },
   card: {
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
+    elevation:5
   },
-  cardTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 6 },
-  cardText: { fontSize: 15, color: "#555" },
+  cardTitle: { fontSize: 17, fontWeight: "500", marginBottom: 6 },
+  cardText: { fontSize: 13, color: "#555" },
   addButton: {
-    backgroundColor: "#0D6EFD",
-    padding: 16,
+    backgroundColor: "#0D3B66",
+    padding: 12,
     borderRadius: 12,
     marginTop: 20,
     marginBottom: 50,
     alignItems: "center",
+  },
+    header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    marginBottom: 15,
   },
   addButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { getHash, getUsuarioLogado } from "../api/api"; // mesmo que na Carteirinha
-
+import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
 
 export default function AlterarSenha() {
+   const navigation = useNavigation<any>();
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [hash, setHash] = useState<string | null>(null);
@@ -68,6 +70,12 @@ export default function AlterarSenha() {
 
   return (
     <View style={styles.container}>
+    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <Ionicons name="arrow-back" size={28} color="#0D3B66" />
+    </TouchableOpacity>
+
+
+      <View style={styles.card}>
       <Text style={styles.title}>Alterar Senha</Text>
 
       <TextInput
@@ -95,25 +103,44 @@ export default function AlterarSenha() {
           {loading ? "Salvando..." : "Salvar"}
         </Text>
       </TouchableOpacity>
+
+      </View>
+    
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff", paddingTop:150, },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20, textAlign: "center" },
+  container: { flex: 1, padding: 20, backgroundColor: "#E5E7EB", paddingTop:150, },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 30, textAlign: "center" },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 12,
-    marginBottom: 15,
+    marginBottom: 20,
   },
   button: {
-    backgroundColor: "#007AFF",
-    padding: 15,
+    backgroundColor: "#0D3B66",
+    padding: 12,
     borderRadius: 8,
     alignItems: "center",
   },
+    card: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 30,
+    maxHeight: 330,
+    elevation:5
+  },
+    backButton: {
+    position: "absolute",
+    top: 35,
+    left: 20,
+    zIndex: 10,
+},
+
+  
   buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
