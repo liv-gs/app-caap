@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "reac
 import { getHash, getUsuarioLogado } from "../api/api"; // mesmo que na Carteirinha
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import AppText from "../components/AppText";
 const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
 
 export default function AlterarSenha() {
@@ -76,7 +77,7 @@ export default function AlterarSenha() {
 
 
       <View style={styles.card}>
-      <Text style={styles.title}>Alterar Senha</Text>
+      <AppText style={styles.title}>Alterar Senha</AppText>
 
       <TextInput
         style={styles.input}
@@ -112,7 +113,7 @@ export default function AlterarSenha() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: "#E5E7EB", paddingTop:150, },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 30, textAlign: "center" },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 30, textAlign: "center", color:"#10567C" },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",

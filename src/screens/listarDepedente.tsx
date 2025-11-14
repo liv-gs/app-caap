@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "500",
-    color: "#333",
+    color: "#0D3B66",
     marginTop: 10,
     marginBottom: 15,
     alignSelf: "auto",
