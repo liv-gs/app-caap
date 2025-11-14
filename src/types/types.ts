@@ -11,8 +11,10 @@ export type MainStackParamList = {
   Categorias: undefined;
   DadosService: { service: ApiService };
   DadosMedico: { service: ApiService };
-  DadosConvenio: { categoria: string }; // 👈 ajustado aqui
+  DadosConvenio: { categoria: string }; 
   agendamento: { service: ApiService };
+  ListarDependente: undefined;
+  CadastroDependente: undefined;
 };
 
 // Tipos dos cards de serviço
