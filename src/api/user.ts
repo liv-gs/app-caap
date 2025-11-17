@@ -1,6 +1,6 @@
 import { getHash, getUsuarioLogado } from "./api";
 
-const API_URL = "https://caapi.org.br/appcaapi/api/";
+const API_URL = "https://appcaapi.caapi.org.br/api/";
 
 export const apiRequest = async (
   endpoint: string,

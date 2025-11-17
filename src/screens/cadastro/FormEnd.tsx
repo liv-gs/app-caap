@@ -79,7 +79,7 @@ const FormEnd: React.FC = () => {
   useEffect(() => {
     const fetchUfs = async () => {
       try {
-        const res = await axios.post("https://caapi.org.br/appcaapi/api/listarUfs", {});
+        const res = await axios.post("https://appcaapi.caapi.org.br/api/listarUfs", {});
         setUfs(res.data.ufs);
       } catch (err) {
         console.error("Erro ao carregar UFs:", err);
@@ -94,7 +94,7 @@ const FormEnd: React.FC = () => {
     if (!estado) return;
     const fetchCidades = async () => {
       try {
-        const res = await axios.post("https://caapi.org.br/appcaapi/api/listarCidades", { uf: estado });
+        const res = await axios.post("https://appcaapi.caapi.org.br/api/listarCidades", { uf: estado });
         setCidades(res.data.cidades);
       } catch (err) {
         console.error("Erro ao carregar cidades:", err);
@@ -160,7 +160,7 @@ const FormEnd: React.FC = () => {
       };
 
       const response = await axios.post(
-        "https://caapi.org.br/appcaapi/api/concluirCadastro",
+        "https://appcaapi.caapi.org.br/api/concluirCadastro",
         data,
         { headers }
       );

@@ -20,7 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
 
-const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
+const API_BASE_URL = "https://appcaapi.caapi.org.br/api/";
 
 export default function EditarDados() {
   const navigation = useNavigation();

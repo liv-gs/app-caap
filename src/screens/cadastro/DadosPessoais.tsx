@@ -134,7 +134,7 @@ const [loading, setLoading] = useState(false);
     const config = {
       method: "post" as const,
       maxBodyLength: Infinity,
-      url: "https://caapi.org.br/appcaapi/api/verificarCadastro",
+      url: "https://appcaapi.caapi.org.br/api/verificarCadastro",
       headers: { "Content-Type": "multipart/form-data" },
       data,
     };
@@ -210,7 +210,7 @@ const onSubmit = async () => {
       };
 
       const response = await axios.post(
-        "https://caapi.org.br/appcaapi/api/concluirCadastro",
+        "https://appcaapi.caapi.org.br/api/concluirCadastro",
         data,
         { headers }
       );

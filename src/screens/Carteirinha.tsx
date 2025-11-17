@@ -5,7 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import { useAuth } from '../context/AuthContext';
 import { getHash, getUsuarioLogado } from '../api/api'; // pega do storage
-const API_BASE_URL = 'https://caapi.org.br/appcaapi/api/';
+const API_BASE_URL = 'https://appcaapi.caapi.org.br/api/';
 
 export default function Carteirinha() {
   const backgroundImage = require('../../assets/images/carteira.png');

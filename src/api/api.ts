@@ -6,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Verificar cadastro antes de concluir (ex: validação de CPF/OAB)
 export const verificarCadastro = async (dados: any) => {
-  const response = await fetch("https://caapi.org.br/appcaapi/api/verificarCadastro", {
+  const response = await fetch("https://appcaapi.caapi.org.br/api/verificarCadastro", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dados),
@@ -18,7 +18,7 @@ export const verificarCadastro = async (dados: any) => {
 
 // Concluir cadastro com dados do usuário, endereço e carteira
 export const concluirCadastro = async (dados: any) => {
-  const response = await fetch("https://caapi.org.br/appcaapi/api/concluirCadastro", {
+  const response = await fetch("https://appcaapi.caapi.org.br/api/concluirCadastro", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dados),
@@ -34,7 +34,7 @@ export const loginAdvogado = async (cpf: string, senha: string) => {
   formData.append("cpf", cpf);
   formData.append("senha", senha);
 
-  const response = await fetch("https://caapi.org.br/appcaapi/api/logarAdvogado", {
+  const response = await fetch("https://appcaapi.caapi.org.br/api/logarAdvogado", {
     method: "POST",
     body: formData,
   });
@@ -90,7 +90,7 @@ export const clearUsuarioLogado = async () => {
 
 // ---------------- Função genérica de requisição autenticada ----------------
 
-const API_URL = "https://caapi.org.br/appcaapi/api/";
+const API_URL = "https://appcaapi.caapi.org.br/api/";
 
 export const apiRequest = async (
   endpoint: string,

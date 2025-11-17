@@ -4,7 +4,7 @@ import { getHash, getUsuarioLogado } from "../api/api"; // mesmo que na Carteiri
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import AppText from "../components/AppText";
-const API_BASE_URL = "https://caapi.org.br/appcaapi/api/";
+const API_BASE_URL = "https://appcaapi.caapi.org.br/api/";
 
 export default function AlterarSenha() {
    const navigation = useNavigation<any>();

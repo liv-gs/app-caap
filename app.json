@@ -1,42 +1,44 @@
 {
   "expo": {
-    "name": "Caap",
-    "slug": "my-app",
-    "version": "1.0.9",
+    "name": "Caapi",
+    "slug": "CAAPI",
+    "version": "2.0.9",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png", 
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
-    
+    "owner": "marcosiran",
     "splash": {
-      "image": "./assets/images/FUNDO_OAB2.png", 
-      "resizeMode": "contain", 
-      "backgroundColor": "#184184" 
+      "image": "./assets/images/FUNDO_OAB2.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#184184"
     },
-
     "assetBundlePatterns": [
       "**/*"
     ],
-
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "package": "br.org.caapi",
+      "bundleIdentifier": "br.org.caapi",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Este aplicativo usa a câmera para capturar fotos de perfil.",        
+        "NSPhotoLibraryUsageDescription": "Precisamos acessar sua galeria para permitir o upload de fotos para perfil."
+      }
     },
-
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png", 
-        "backgroundColor": "#184184" 
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#184184"
       },
-      "package": "com.livgs.myapp" ,
+      "package": "br.org.caapi.app",
       "versionCode": 10
     },
-
     "web": {
-      "favicon": "./assets/images/icon.png" 
+      "favicon": "./assets/images/icon.png"
     },
-
     "extra": {
       "eas": {
-        "projectId": "18364289-584c-4f20-8c1c-dea8156913bd"
+        "projectId": "8fc89fcb-8b7d-4d59-9cd8-8d1f26e3e571"
       }
     }
   }
