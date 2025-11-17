@@ -53,7 +53,7 @@ export default function ListarDepedente() {
     async function carregarDependentes() {
       try {
         const response = await axios.get(
-          "https://caapi.org.br/appcaapi/api/listarDependentes",
+          "https://appcaapi.caapi.org.br/api/listarDependentes",
           {
             headers: {
               "Content-Type": "application/json",
