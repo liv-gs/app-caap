@@ -77,7 +77,7 @@ export default function CategoriasScreen() {
     async function fetchCategorias() {
       try {
         const res = await fetch(
-          "https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/categorias"
+          "https://caapi.org.br/wp-json/clube/v1/categorias"
         );
         const json = await res.json();
         setCategorias(json);

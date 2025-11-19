@@ -60,7 +60,7 @@ export default function DadosService() {
       try {
         setLoadingProfissionais(true);
         const res = await fetch(
-          `https://sites-caapi.mpsip8.easypanel.host/wp-json/caapi/v1/servicos?idpai=${service.id}`
+          `https://caapi.org.br/wp-json/caapi/v1/servicos?idpai=${service.id}`
         );
         const data = await res.json();
         setProfissionais(data);

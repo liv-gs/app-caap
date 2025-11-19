@@ -95,7 +95,7 @@ export default function Calendar() {
   async function buscarAgendamentos() {
     try {
       const res = await fetch(
-        `https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/listar?servico_id=${service.id}`,
+        `https://caapi.org.br/wp-json/agendamento/v1/listar?servico_id=${service.id}`,
         {
           headers: {
             Authorization:
@@ -168,7 +168,7 @@ export default function Calendar() {
       };
 
       const res = await fetch(
-        "https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/cadastrar",
+        "https://caapi.org.br/wp-json/agendamento/v1/cadastrar",
         {
           method: "POST",
           headers: {
@@ -433,7 +433,7 @@ const markedDates: Record<string, MarkedDate> = Object.fromEntries(
                             };
 
                             const res = await fetch(
-                              "https://sites-caapi.mpsip8.easypanel.host/wp-json/agendamento/v1/cadastrar",
+                              "https://caapi.org.br/wp-json/agendamento/v1/cadastrar",
                               {
                                 method: "POST",
                                 headers: {

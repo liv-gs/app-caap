@@ -48,7 +48,7 @@ function NewsItem({ tag, tagColor, title, link }: NewsItemProps) {
   return (
     <TouchableOpacity
       style={styles.newsItem}
-      onPress={() => Linking.openURL("https://sites-caapi.mpsip8.easypanel.host/noticias/")} 
+      onPress={() => Linking.openURL("https://caapi.org.br/noticias/")} 
     >
       <View style={{ flex: 1 }}>
         <Text style={[styles.newsTag, { color: tagColor }]}>{tag}</Text>
@@ -113,7 +113,7 @@ export default function Home() {
 
 
     useEffect(() => {
-  fetch("https://sites-caapi.mpsip8.easypanel.host/wp-json/wp/v2/posts?_embed") // adiciona _embed
+  fetch("https://caapi.org.br/wp-json/wp/v2/posts?_embed") // adiciona _embed
     .then(res => res.json())
     .then((data: any[]) => {
       const mapped: NewsType[] = data.map(item => ({

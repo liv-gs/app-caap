@@ -58,7 +58,7 @@ export default function DadosConvenio() {
     const fetchCidades = async () => {
       try {
         const res = await fetch(
-          "https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/cidades"
+          "https://caapi.org.br/wp-json/clube/v1/cidades"
         );
         const json = await res.json();
         setCidades(json);
@@ -76,7 +76,7 @@ export default function DadosConvenio() {
 
     setLoading(true);
     try {
-      const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${
+      const url = `https://caapi.org.br/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${
         categoria ?? ""
       }&page=${page}&per_page=10`;
 
@@ -104,7 +104,7 @@ export default function DadosConvenio() {
       setHasMore(true);
       setLoading(true);
       try {
-        const url = `https://sites-caapi.mpsip8.easypanel.host/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${
+        const url = `https://caapi.org.br/wp-json/clube/v1/filtro?cidade=${cidadeSelecionada}&categoria=${
           categoria ?? ""
         }&page=1&per_page=10`;
         const res = await fetch(url);

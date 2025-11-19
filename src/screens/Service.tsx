@@ -67,7 +67,7 @@ export default function Service() {
   const fetchServices = async () => {
     try {
       const res = await fetch(
-        "https://sites-caapi.mpsip8.easypanel.host/wp-json/caapi/v1/servicos"
+        "https://caapi.org.br/wp-json/caapi/v1/servicos"
       );
       const data = await res.json();
 
