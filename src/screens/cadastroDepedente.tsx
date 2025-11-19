@@ -186,7 +186,7 @@ const maskPhone = (v: string) => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 100, backgroundColor: "#E5E7EB" },
+  container: { flex: 1, padding: 20, paddingTop: 130, backgroundColor: "#E5E7EB" },
   title: { fontSize: 20, fontWeight: "500", marginBottom: 20, color:"#0D3B66" },
   card: {
     backgroundColor: "#fff",
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     maxHeight: 330,
-    elevation:5
+    elevation:3
   },
     header: {
     flexDirection: "row",
