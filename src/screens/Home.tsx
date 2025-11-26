@@ -149,7 +149,10 @@ export default function Home() {
           style={styles.avatar}
         />
         <View>
-          <Text style={styles.welcome}>Olá, {usuario?.nomeLogado || "Advogado"}</Text>
+         <Text style={[styles.welcome, { flexShrink: 1, flexWrap: "wrap" }]}>
+            Olá, {usuario?.nomeLogado || "Advogado"}
+          </Text>
+
           <Text style={styles.subtext}>
             OAB/PI {usuario?.oab || "----"} · Bem-vindo de volta!
           </Text>

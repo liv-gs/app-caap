@@ -99,20 +99,16 @@ export default function ListarDepedente() {
 
   return (
     <View style={styles.container}>
-      {/* BOTÃO VOLTAR */}
-
-    <View style={styles.header}>
-      <TouchableOpacity onPress={irParaHome}>
-        <Ionicons name="arrow-back" size={26} color="#0D3B66" />
-      </TouchableOpacity>
-
-      <AppText style={styles.title}>Dependentes</AppText>
-    </View>
-
+       <View  style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.navigate("ListarDependente")}>
+                  <Ionicons name="arrow-back" size={26} color="#0D3B66" />
+                </TouchableOpacity>
+                <AppText style={styles.title}>Dependentes</AppText>
+            </View>
 
       {/* LOADING ENQUANTO CARREGA SESSÃO OU API */}
       {loading ? (
-        <View style={{ marginTop: 40 }}>
+        <View >
           <ActivityIndicator size="large" color="#0D6EFD" />
         </View>
       ) : (
@@ -144,7 +140,9 @@ export default function ListarDepedente() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 20, paddingTop: 50, backgroundColor: "#E5E7EB" },
+  container: { flex: 1, paddingHorizontal: 20, paddingTop: 80, backgroundColor: "#E5E7EB" },
+  title: { fontSize: 20, fontWeight: "500", marginBottom: 20, color:"#0D3B66" },
+
   backButton: {
     position: "absolute",
     left: 20,
@@ -152,20 +150,13 @@ const styles = StyleSheet.create({
     padding: 5,
     zIndex: 10,
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "500",
-    color: "#0D3B66",
-    marginTop: 10,
-    marginBottom: 15,
-    alignSelf: "auto",
-  },
+
   card: {
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    elevation:5
+    elevation:1
   },
   cardTitle: { fontSize: 17, fontWeight: "500", marginBottom: 6 },
   cardText: { fontSize: 13, color: "#555" },
@@ -177,11 +168,10 @@ const styles = StyleSheet.create({
     marginBottom: 50,
     alignItems: "center",
   },
-    header: {
+   header: {
     flexDirection: "row",
-    alignItems: "center",
     gap: 16,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   addButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
