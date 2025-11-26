@@ -51,6 +51,18 @@ export async function fileToBase64(uri: string) {
   }
 }
 
+const toBase64FromUrl = async (url) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const base64 = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+
+  return (base64);
+};
+
 // Helpers
 const onlyDigits = (v: string) => v.replace(/\D/g, "");
 const maskCEP = (v: string) => {
@@ -126,12 +138,12 @@ const FormEnd: React.FC = () => {
     try {
       const data = new FormData();
       const frenteBase64 = carteira?.frente?.uri
-        ? await fileToBase64(carteira.frente.uri)
+        ? await toBase64FromUrl(carteira.frente.uri)
         : null;
       const versoBase64 = carteira?.verso?.uri
-        ? await fileToBase64(carteira.verso.uri)
+        ? await toBase64FromUrl(carteira.verso.uri)
         : null;
-
+      //console.log(carteira);
       // Dados pessoais
       data.append("nome", dados.nome);
       data.append("cpf", dados.cpf);
@@ -164,6 +176,11 @@ const FormEnd: React.FC = () => {
         data,
         { headers }
       );
+
+      if(response.data?.erro){
+        Alert.alert("Erro", response.data.erro);
+        return;
+      }
 
       Alert.alert("Sucesso", "Cadastro concluído!");
       navigation.navigate("CadastroValidacao"); 
