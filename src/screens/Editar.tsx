@@ -274,21 +274,22 @@ export default function EditarDados() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: "#e6e6e6" }}
+      style={{ flex: 1, backgroundColor: "#e6e6e6", paddingTop:70 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
     >
       {/* Botão de Voltar */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#0D3B66" />
         </TouchableOpacity>
 
-      <View style={{ paddingTop: 50, paddingBottom: 10 }}>
         <AppText style={styles.title}>Editar Dados</AppText>
+
+        {/* Espaço fantasma pra centralizar o título */}
+        <View style={{ width: 24 }} />
       </View>
+
 
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, padding: 20 }}
@@ -425,12 +426,19 @@ export default function EditarDados() {
 
 const styles = StyleSheet.create({
   title: {
-    paddingTop: 30,
-    fontSize: 22,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: 10,
-    color: "#173C6B",
+  flex: 1,
+  fontSize: 22,
+  fontWeight: "600",
+  textAlign: "center",
+  color: "#173C6B",
+},
+
+    header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 10,
   },
   formContainer: {
     backgroundColor: "#fff",

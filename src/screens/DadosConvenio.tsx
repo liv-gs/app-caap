@@ -17,6 +17,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 
 import { MainStackParamList } from "../types/types";
 type DadosConvenioRouteProp = RouteProp<MainStackParamList, "DadosConvenio">;
+import { ScrollView, Image } from "react-native";
 
 
 type Convenio = {
@@ -123,8 +124,17 @@ export default function DadosConvenio() {
   }, [categoria, cidadeSelecionada]);
 
   const abrirLink = (url: string) => {
-    if (url) Linking.openURL(url);
-  };
+      if (url) Linking.openURL(url);
+    };
+
+    const cidadesUnicas = Array.from(
+    new Set(selectedConvenio?.cidade ?? [])
+  );
+
+  const categoriasUnicas = Array.from(
+    new Set(selectedConvenio?.categoria ?? [])
+  );
+
 
   const renderItem = ({ item }: { item: Convenio }) => (
     <View style={styles.card}>
@@ -209,52 +219,67 @@ return (
     />
 
     {/* 🔹 Modal com detalhes */}
-    <Modal
-      visible={!!selectedConvenio}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setSelectedConvenio(null)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+     <Modal
+    visible={!!selectedConvenio}
+    transparent
+    animationType="slide"
+    onRequestClose={() => setSelectedConvenio(null)}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        {/* Imagem */}
+        {selectedConvenio?.image && (
+          <Image
+            source={{ uri: selectedConvenio.image }}
+            style={styles.modalImage}
+            resizeMode="contain"
+          />
+        )}
+
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Título */}
           <AppText style={styles.modalTitle}>
             {selectedConvenio?.title}
           </AppText>
+
+          {/* Descrição */}
           <AppText style={styles.modalDescricao}>
             {selectedConvenio?.content.replace(/<[^>]*>/g, "")}
           </AppText>
 
-          {selectedConvenio?.cidade?.length > 0 && (
+          {/* Cidades */}
+          {cidadesUnicas.length > 0 && (
             <View style={styles.badgeContainer}>
-              {selectedConvenio.cidade.map((cidade) => (
-                <AppText key={cidade} style={styles.badge}>
+              {cidadesUnicas.map((cidade) => (
+                <AppText key={`cidade-${cidade}`} style={styles.badge}>
                   📍 {cidade}
                 </AppText>
               ))}
             </View>
           )}
-
-          {selectedConvenio?.categoria?.length > 0 && (
+          {/* Categorias */}
+          {categoriasUnicas.length > 0 && (
             <View style={styles.badgeContainer}>
-              {selectedConvenio.categoria.map((cat) => (
-                <AppText key={cat} style={styles.badge}>
+              {categoriasUnicas.map((cat) => (
+                <AppText key={`categoria-${cat}`} style={styles.badge}>
                   🏷️ {cat}
                 </AppText>
               ))}
             </View>
           )}
 
-          <TouchableOpacity
-            style={styles.modalButton}
-            onPress={() => setSelectedConvenio(null)}
-          >
-            <AppText style={{ color: "#fff", fontWeight: "bold" }}>
-              Fechar
-            </AppText>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
+
+        {/* Botão */}
+        <TouchableOpacity
+          style={styles.modalButton}
+          onPress={() => setSelectedConvenio(null)}
+        >
+          <AppText style={styles.modalButtonText}>Fechar</AppText>
+        </TouchableOpacity>
       </View>
-    </Modal>
+    </View>
+  </Modal>
   </View>
 );
 
@@ -266,6 +291,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#e1e1e167",
     paddingHorizontal: 20,
   },
+  modalImage: {
+  width: "100%",
+  height: 180,
+  borderRadius: 10,
+  marginBottom: 12,
+  backgroundColor: "#f2f2f2",
+},
+
+badgeSection: {
+  marginBottom: 12,
+},
+
+sectionTitle: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#0D3B66",
+  marginBottom: 6,
+},
+
+modalButtonText: {
+  color: "#fff",
+  fontWeight: "bold",
+},
+
   topContainer: {
     paddingTop: 130, 
     marginBottom: 12,
@@ -370,9 +419,10 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
+     height: "80%",
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
     elevation: 5,
   },
   modalTitle: {

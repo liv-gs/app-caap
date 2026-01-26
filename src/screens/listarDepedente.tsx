@@ -100,9 +100,11 @@ export default function ListarDepedente() {
   return (
     <View style={styles.container}>
        <View  style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.navigate("ListarDependente")}>
-                  <Ionicons name="arrow-back" size={26} color="#0D3B66" />
-                </TouchableOpacity>
+                
+                 <TouchableOpacity  onPress={() => navigation.goBack()}>
+                      <Ionicons name="arrow-back" size={28} color="#0D3B66" />
+                    </TouchableOpacity>
+                    
                 <AppText style={styles.title}>Dependentes</AppText>
             </View>
 
