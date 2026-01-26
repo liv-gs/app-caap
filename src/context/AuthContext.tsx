@@ -1,5 +1,12 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useState, ReactNode, useContext } from "react";
+import React, {
+  createContext,
+  useState,
+  ReactNode,
+  useContext,
+  useEffect,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginAdvogado as apiLoginAdvogado, setUsuarioLogado } from "../api/api";
 
 // 👉 Tipagem do endereço
@@ -8,8 +15,8 @@ export type Endereco = {
   logradouro: string;
   numero: string;
   bairro: string;
-  municipio: string; // nome da cidade
-  uf: string;        // sigla do estado
+  municipio: string;
+  uf: string;
   cep: string;
   complemento?: string;
   enderecoCompleto: string;
@@ -17,6 +24,7 @@ export type Endereco = {
   idUF?: number;
 };
 
+// 👉 Tipagem do usuário
 export type Usuario = {
   idUsuarioLogado: number;
   nomeLogado: string;
@@ -51,14 +59,15 @@ export type Usuario = {
 // 👉 Tipagem do contexto
 interface AuthContextType {
   usuario: Usuario | null;
-  setUsuario: (usuario: Usuario) => void;
-  clearUsuario: () => void;
+  setUsuario: (usuario: Usuario) => Promise<void>;
+  clearUsuario: () => Promise<void>;
   loginAdvogado: (cpf: string, senha: string) => Promise<Usuario>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Função para padronizar dados do usuário
+// 👉 Função para padronizar dados do usuário
 const padronizarUsuario = (usuario: any): Usuario => {
   return {
     ...usuario,
@@ -75,40 +84,77 @@ const padronizarUsuario = (usuario: any): Usuario => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [usuario, setUsuarioState] = useState<Usuario | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const setUsuario = (usuario: Usuario) => {
+  // 🔄 Carregar usuário salvo ao abrir o app
+  useEffect(() => {
+    const loadUsuario = async () => {
+      try {
+        const usuarioStorage = await AsyncStorage.getItem("@usuario");
+
+        if (usuarioStorage) {
+          setUsuarioState(JSON.parse(usuarioStorage));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar usuário do AsyncStorage:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUsuario();
+  }, []);
+
+  // 💾 Salvar usuário no estado + AsyncStorage
+  const setUsuario = async (usuario: Usuario) => {
     setUsuarioState(usuario);
+    await AsyncStorage.setItem("@usuario", JSON.stringify(usuario));
   };
 
-  const clearUsuario = () => {
+  // 🚪 Logout — limpa tudo
+  const clearUsuario = async () => {
     setUsuarioState(null);
+    await AsyncStorage.removeItem("@usuario");
   };
 
+  // 🔐 Login advogado
   const loginAdvogado = async (cpf: string, senha: string) => {
     const data = await apiLoginAdvogado(cpf, senha);
 
     if (data?.usuario) {
       const usuarioLogado = padronizarUsuario(data.usuario);
-      setUsuario(usuarioLogado);
+
+      await setUsuario(usuarioLogado);
       await setUsuarioLogado(usuarioLogado);
+
       return usuarioLogado;
     } else {
-      throw new Error(data.erro || "Erro ao logar");
+      throw new Error(data?.erro || "Erro ao logar");
     }
   };
 
   return (
-    <AuthContext.Provider value={{ usuario, setUsuario, clearUsuario, loginAdvogado }}>
+    <AuthContext.Provider
+      value={{
+        usuario,
+        setUsuario,
+        clearUsuario,
+        loginAdvogado,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook para consumir o contexto
+// 👉 Hook para consumir o contexto
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth deve ser usado dentro de um AuthProvider");
   }
+
   return context;
 };

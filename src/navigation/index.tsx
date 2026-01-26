@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ActivityIndicator, View } from "react-native";
 
 // Telas
 import LoginScreen from "../screens/LoginScreen";
@@ -15,17 +17,10 @@ import DrawerNavigator from "./DrawerNavigation";
 export type AuthStackParamList = {
   Login: undefined;
   EscolhaTipo: undefined;
-
-  // comum (com param pra saber o tipo)
   CadastroDados: { tipo: "advogado" | "colaborador" };
-
-  // advogado
   CadastroCarteira: { dados: any };
   CadastroEndereco: { dados: any; carteira: any };
-
-  // validação (comum aos dois)
   CadastroValidacao: undefined;
-
   Home: undefined;
   Editar: undefined;
   RecuperarSenha: undefined;
@@ -34,26 +29,48 @@ export type AuthStackParamList = {
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export default function AuthStack() {
+  const [loading, setLoading] = useState(true);
+  const [usuarioLogado, setUsuarioLogado] = useState(false);
+
+  useEffect(() => {
+    const verificarLogin = async () => {
+      const usuario = await AsyncStorage.getItem("@usuario");
+      if (usuario) {
+        setUsuarioLogado(true);
+      }
+      setLoading(false);
+    };
+
+    verificarLogin();
+  }, []);
+
+  // ⏳ enquanto verifica o storage
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="RecuperarSenha" component={RecuperarSenha} />
-      <Stack.Screen name="EscolhaTipo" component={EscolhaTipoScreen} />
-
-      {/* comum */}
-      <Stack.Screen name="CadastroDados" component={FormDados} />
-
-      {/* advogado */}
-      <Stack.Screen name="CadastroCarteira" component={FotoCarteira} />
-      <Stack.Screen name="CadastroEndereco" component={FormEnd} />
-
-      {/* tela final */}
-      <Stack.Screen name="CadastroValidacao" component={Validação} />
-      <Stack.Screen name="Editar" component={EditarDados} />
-
-      {/* pós login */}
-      <Stack.Screen name="Home" component={DrawerNavigator} />
-
+      {usuarioLogado ? (
+        // 🔒 Já logado → entra direto no app
+        <Stack.Screen name="Home" component={DrawerNavigator} />
+      ) : (
+        // 🔓 Não logado → fluxo normal
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="RecuperarSenha" component={RecuperarSenha} />
+          <Stack.Screen name="EscolhaTipo" component={EscolhaTipoScreen} />
+          <Stack.Screen name="CadastroDados" component={FormDados} />
+          <Stack.Screen name="CadastroCarteira" component={FotoCarteira} />
+          <Stack.Screen name="CadastroEndereco" component={FormEnd} />
+          <Stack.Screen name="CadastroValidacao" component={Validação} />
+        
+        </>
+      )}
     </Stack.Navigator>
   );
 }

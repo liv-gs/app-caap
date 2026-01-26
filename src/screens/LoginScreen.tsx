@@ -16,7 +16,7 @@ import FundoSvg from "../../assets/images/FUNDO.svg";
 import GroupSvg from "../../assets/images/Group.svg";
 import { ActivityIndicator } from "react-native";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LogoSvg  from "../../assets/images/Camada_1.svg";
 type LoginScreenProp = NativeStackNavigationProp<AuthStackParamList, "Login">;
 
@@ -33,40 +33,45 @@ export default function LoginScreen() {
   const { setUsuario } = useAuth();
 
 const handleLogin = async () => {
-  setLoading(true);
-  try {
-    const data = await loginAdvogado(cpf, senha);
- console.log("🔹 Dados retornados da API:", data);
-    console.log("🔹 Usuario retornado:", data?.usuario);
-    console.log("🔹 Endereço:", data?.usuario?.endereco);
-    if (!data?.usuario) {
-      setError("CPF ou Senha inválidos.");
-      return;
-    }
+    setLoading(true);
+    try {
+      const data = await loginAdvogado(cpf, senha);
+  console.log("🔹 Dados retornados da API:", data);
+      console.log("🔹 Usuario retornado:", data?.usuario);
+      console.log("🔹 Endereço:", data?.usuario?.endereco);
+      if (!data?.usuario) {
+        setError("CPF ou Senha inválidos.");
+        return;
+      }
 
-    // Salva no contexto
-    setUsuario(data.usuario);
+      // Salva no contexto
+      setUsuario(data.usuario);
 
-    // Verifica se o usuário foi validado
-    if (data.usuario.validado === 0) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "CadastroValidacao" }],
-      });
-    } else if (data.usuario.validado === 1) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Home" }],
-      });
-    } else {
-      setError("Status do usuário desconhecido.");
+      await AsyncStorage.setItem(
+        "@usuario",
+        JSON.stringify(data.usuario)
+      );
+
+      // Verifica se o usuário foi validado
+      if (data.usuario.validado === 0) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "CadastroValidacao" }],
+        });
+      } else if (data.usuario.validado === 1) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Home" }],
+        });
+      } else {
+        setError("Status do usuário desconhecido.");
+      }
+    } catch (err) {
+      setError("Erro ao conectar com o servidor.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError("Erro ao conectar com o servidor.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
