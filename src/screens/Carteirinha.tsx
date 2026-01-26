@@ -44,6 +44,8 @@ export default function Carteirinha() {
 }
 
 
+
+
   const tirarFoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: 'images',
@@ -53,14 +55,25 @@ export default function Carteirinha() {
       base64: true,
     });
 
-    if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      const base64 = result.assets[0].base64 || null;
-      setFotoLocal(uri);
-      setBase64Foto(base64);
+   if (!result.canceled) {
+    const uri = result.assets[0].uri;
+    const base64 = result.assets[0].base64 || null;
 
-      await enviarFoto(base64, uri); // envia imediatamente
+    if (!base64) {
+      Alert.alert("Erro", "Não foi possível processar a foto.");
+      return;
     }
+
+    const base64ComPrefixo = base64.startsWith("data:")
+      ? base64
+      : `data:image/jpeg;base64,${base64}`;
+
+    setFotoLocal(uri);
+    setBase64Foto(base64ComPrefixo);
+
+    await enviarFoto(base64ComPrefixo, uri);
+  }
+
   };
 
   const enviarFoto = async (base64: string | null, uri: string) => {
@@ -91,13 +104,28 @@ export default function Carteirinha() {
         body: new URLSearchParams({ foto: base64 }).toString(),
       });
 
-      const data = await response.json();
-      console.log("Resposta da API:", data);
+      const text = await response.text();
+      console.log("RETORNO RAW:", text);
+
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        Alert.alert("Erro", "Resposta inválida do servidor.");
+        return;
+      }
+
 
       if (data.ok) {
-        Alert.alert("Sucesso", "Foto de perfil atualizada!");
-        if (usuario) setUsuario({ ...usuario, foto: uri });
-      } else {
+  Alert.alert("Sucesso", data.ok);
+
+    if (usuario) {
+      setUsuario({
+        ...usuario,
+        foto: data.foto, // 👈 usa a URL real do backend
+      });
+    }
+  }else {
         Alert.alert("Erro", data.erro || "Não foi possível salvar a foto.");
       }
     } catch (err: any) {
