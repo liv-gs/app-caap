@@ -11,8 +11,11 @@ expo install expo-image-picker
 
 npx expo start
 
-654  970 07368
+65497007368
 
-
+362254
 
 123123
+
+git push origin main
+git push backup main

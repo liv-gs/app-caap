@@ -7,7 +7,6 @@ import type { Usuario } from "../types/Usuario";
 
 export type MainStackParamList = {
   Tabs: undefined;
-  Editar: undefined;
   Service: undefined;
   Categorias: undefined;
   DadosService: { service: ApiService };
