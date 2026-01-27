@@ -7,7 +7,7 @@ import { Feather, SimpleLineIcons, MaterialIcons, Ionicons } from '@expo/vector-
 import { getFocusedRouteNameFromRoute, RouteProp } from '@react-navigation/native';
 
 import TabsNavigator from './TabsNavigation';
-
+import EditarDados from '../screens/Editar';
 import ListaConvenio from '../screens/Convenio';
 import LoginScreen from '../screens/LoginScreen';
 import DadosConvenio from '../screens/DadosConvenio';
@@ -25,6 +25,7 @@ import LogoSvg from '../../assets/images/Camada_1.svg';
 import HeaderBg from '../../assets/images/FUNDO.svg';
 
 import { MainStackParamList } from "../types/types";
+import { useAuth } from "../context/AuthContext";
 
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -39,10 +40,31 @@ function HeaderBackground() {
     </View>
   );
 }
+function LogoutItem() {
+  const { logout } = useAuth();
+
+  return (
+    <TouchableOpacity
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 16,
+      }}
+      onPress={logout}
+    >
+      <SimpleLineIcons name="logout" size={18} color="#0D3B66" />
+      <Text style={{ marginLeft: 12, color: "#0D3B66", fontSize: 16 }}>
+        Sair
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 
 function MainStack() {
   return (
     <Stack.Navigator
+     
       screenOptions={{
         headerBackground: () => <HeaderBackground />,
         headerTransparent: true,
@@ -56,6 +78,7 @@ function MainStack() {
       <Stack.Screen name="DadosMedico" component={DadosMedico} options={{ headerShown: true }} />
       <Stack.Screen name="DadosConvenio" component={DadosConvenio} options={{ headerShown: true }} />
       <Stack.Screen name="agendamento" component={Calendar} options={{ headerShown: true }} />
+      <Stack.Screen name="Editar" component={EditarDados} />
     
       <Stack.Screen name="CadastroDependente" component={CadastroDependente} options={{ headerShown: false }} />
 
@@ -106,7 +129,7 @@ export default function DrawerNavigator() {
         }}
       />
 
-      {/* 🔵 LISTAR DEPENDENTES NO MENU */}
+      {/*  LISTAR DEPENDENTES NO MENU */}
       <Drawer.Screen
         name="ListarDependente"
         component={ListarDependente}
@@ -133,15 +156,17 @@ export default function DrawerNavigator() {
 
       {/* SAIR */}
       <Drawer.Screen
-        name="LoginScreen"
-        component={LoginScreen}
+        name="Logout"
         options={{
-          title: '',
-          drawerLabel: 'Sair',
-          headerShown: false,
-          drawerIcon: ({ color, size }) => <SimpleLineIcons name="logout" color={color} size={size} />,
+          drawerLabel: () => <LogoutItem />,
         }}
-      />
+      >
+        {() => null}
+      </Drawer.Screen>
+
+
+
+
 
     </Drawer.Navigator>
   );

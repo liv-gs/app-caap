@@ -1,10 +1,8 @@
-import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import "react-native-gesture-handler";
 
-import AuthStack from "./src/navigation";
 import { AuthProvider } from "./src/context/AuthContext";
+import RootNavigator from "./src/navigation/RootNavigation";
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -12,13 +10,13 @@ export default function App() {
   });
 
   if (!fontsLoaded) {
-    return null;
+    return null; // splash simples
   }
 
   return (
     <AuthProvider>
       <NavigationContainer>
-        <AuthStack />
+        <RootNavigator />
       </NavigationContainer>
     </AuthProvider>
   );

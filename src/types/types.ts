@@ -15,6 +15,7 @@ export type MainStackParamList = {
   agendamento: { service: ApiService };
   ListarDependente: undefined;
   CadastroDependente: undefined;
+  Editar: undefined;
 };
 
 // Tipos dos cards de serviço
@@ -32,4 +33,11 @@ export type ParametroDados = {
     celular: string;
   };
   Endereco: undefined;
+};
+
+export type DrawerParamList = {
+  MainStack: undefined;
+  ListarDependente: undefined;
+  AlterarSenha: undefined;
+  Logout: undefined;
 };

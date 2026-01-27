@@ -49,7 +49,7 @@ export default function AuthStack() {
 
       {/* tela final */}
       <Stack.Screen name="CadastroValidacao" component={Validação} />
-      <Stack.Screen name="Editar" component={EditarDados} />
+      
 
       {/* pós login */}
       <Stack.Screen name="Home" component={DrawerNavigator} />

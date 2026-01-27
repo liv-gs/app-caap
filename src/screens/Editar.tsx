@@ -344,16 +344,15 @@ export default function EditarDados() {
             placeholder="Digite a UF"
           />
           {ufsFiltradas.length > 0 && (
-            <FlatList
-              data={ufsFiltradas}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => setEstado(item)}>
+            <View>
+              {ufsFiltradas.map((item) => (
+                <TouchableOpacity key={item} onPress={() => setEstado(item)}>
                   <Text style={styles.suggestion}>{item}</Text>
                 </TouchableOpacity>
-              )}
-            />
+              ))}
+            </View>
           )}
+
 
           <AppText style={styles.label}>Cidade</AppText>
           <TextInput
@@ -363,11 +362,10 @@ export default function EditarDados() {
             placeholder="Digite a cidade"
           />
           {cidadeFiltrada.length > 0 && (
-            <FlatList
-              data={cidadeFiltrada}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
+            <View>
+              {cidadeFiltrada.map((item) => (
                 <TouchableOpacity
+                  key={item}
                   onPress={() => {
                     setCidade(item);
                     const cidadeSelecionada = cidades.find(
@@ -378,9 +376,10 @@ export default function EditarDados() {
                 >
                   <Text style={styles.suggestion}>{item}</Text>
                 </TouchableOpacity>
-              )}
-            />
+              ))}
+            </View>
           )}
+
 
           <AppText style={styles.label}>Bairro</AppText>
           <TextInput style={styles.input} value={bairro} onChangeText={setBairro} />
