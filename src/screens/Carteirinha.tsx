@@ -4,7 +4,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Feather } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import { useAuth } from '../context/AuthContext';
-import { getHash, getUsuarioLogado } from '../api/api'; // pega do storage
+import { getHash, getUsuarioLogado } from '../api/api'; 
+import * as ImageManipulator from 'expo-image-manipulator';
+
+
 const API_BASE_URL = 'https://appcaapi.caapi.org.br/api/';
 
 export default function Carteirinha() {
@@ -35,10 +38,10 @@ export default function Carteirinha() {
   function formatarData(data?: string) {
   if (!data) return "Não informado";
 
-  // Se já vier no formato brasileiro, retorna direto
+  
   if (data.includes("/")) return data;
 
-  // Se vier no formato YYYY-MM-DD → transforma em DD/MM/YYYY
+ 
   const [ano, mes, dia] = data.split("-");
   return `${dia}/${mes}/${ano}`;
 }
@@ -47,34 +50,49 @@ export default function Carteirinha() {
 
 
   const tirarFoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: 'images',
-      allowsEditing: true,
-      aspect: [4, 4],
-      quality: 0.8,
-      base64: true,
-    });
+  const result = await ImagePicker.launchCameraAsync({
+    mediaTypes: 'images',
+    allowsEditing: true,
+    aspect: [4, 4],
+    quality: 0.8,
+    base64: false,
+  });
 
-   if (!result.canceled) {
-    const uri = result.assets[0].uri;
-    const base64 = result.assets[0].base64 || null;
+  if (result.canceled) return;
 
-    if (!base64) {
+  try {
+    const originalUri = result.assets[0].uri;
+
+    const manipulated = await ImageManipulator.manipulateAsync(
+      originalUri,
+      [{ resize: { width: 600 } }],
+      {
+        compress: 0.8,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      }
+    );
+
+    if (!manipulated.base64) {
       Alert.alert("Erro", "Não foi possível processar a foto.");
       return;
     }
 
-    const base64ComPrefixo = base64.startsWith("data:")
-      ? base64
-      : `data:image/jpeg;base64,${base64}`;
+    const base64ComPrefixo = manipulated.base64.startsWith("data:")
+      ? manipulated.base64
+      : `data:image/jpeg;base64,${manipulated.base64}`;
 
-    setFotoLocal(uri);
+    setFotoLocal(manipulated.uri);
     setBase64Foto(base64ComPrefixo);
 
-    await enviarFoto(base64ComPrefixo, uri);
+    await enviarFoto(base64ComPrefixo, manipulated.uri);
+  } catch (error) {
+    console.error("Erro ao processar imagem:", error);
+    Alert.alert("Erro", "Falha ao processar a imagem.");
   }
+};
 
-  };
+
 
   const enviarFoto = async (base64: string | null, uri: string) => {
     if (!base64) {
@@ -122,7 +140,7 @@ export default function Carteirinha() {
     if (usuario) {
       setUsuario({
         ...usuario,
-        foto: data.foto, // 👈 usa a URL real do backend
+        foto: data.foto, 
       });
     }
   }else {
@@ -161,12 +179,12 @@ export default function Carteirinha() {
           )}
         </TouchableOpacity>
 
-        {/* Textos abaixo da foto */}
+     
         <View style={styles.info}>
           <AppText style={styles.profissao}>{usuario.tipo}</AppText>
           <AppText style={styles.nome}>{usuario.nomeLogado}</AppText>
 
-          {/* Dados abaixo do nome */}
+      
           <View style={styles.dadosBaixo}>
              <AppText style={styles.dadoTexto}>
               Data de Nascimento: {formatarData(usuario.dataNascimento)}
