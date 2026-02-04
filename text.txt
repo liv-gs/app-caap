@@ -4,18 +4,7 @@ npx expo start
 expo install expo-image-picker
 
 
-
-
-
-244.746.410-00
-
 npx expo start
 
-65497007368
 
-362254
 
-123123
-
-git push origin main
-git push backup main
